@@ -1,5 +1,5 @@
-Servidor - Linguagem Go
+# Servidor - Linguagem Go
 
 Para executar o servidor, basta rodar o seguinte comando:
 
-go run <nome-arquivo>.go
+go run \<nome-arquivo\>.go
