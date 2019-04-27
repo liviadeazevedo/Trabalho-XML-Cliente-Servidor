@@ -25,6 +25,7 @@ O que deve ser apresentado no dia da entrega? Os sistemas se comunicando indepen
 - 00000000004 -> Código 4
 
 Obs: Para cpfs diferentes desses, retornar o código 0(Canditado não encontrado).
+
 Obs2: No fim, será feito um relatório descrevendo o funcionamento do sistema.
 
 ------------------
