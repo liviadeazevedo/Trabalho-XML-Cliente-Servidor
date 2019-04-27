@@ -1,4 +1,4 @@
-# Trabalho-XML-Cliente-Servidor
+# Trabalho XML: Cliente Servidor
 
 A universidade UFRRJ está aceitando inscrições para o seu programa de Pós-Graduação. Para tanto, os candidatos que quiserem concorrer a uma vaga devem realizar a inscrição submetendo seus boletins escolares para o sistema da UFRRJ em formato XML, respeitando o XML Schema a ser definido, conforme conversado em aula. O sistema da UFRRJ deve disponibilizar dois métodos para serem invocados:
 
@@ -25,10 +25,12 @@ O que deve ser apresentado no dia da entrega? Os sistemas se comunicando indepen
 - 00000000004 -> Código 4
 
 Obs: Para cpfs diferentes desses, retornar o código 0(Canditado não encontrado).
+Obs2: No fim, será feito um relatório descrevendo o funcionamento do sistema.
 
 ------------------
 
 Para implmentação, usaremos as linguagens:
 
-**CLiente:** Python
+**Cliente:** Python
+
 **Servidor:** Go
