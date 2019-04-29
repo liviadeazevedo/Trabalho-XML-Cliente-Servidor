@@ -16,14 +16,12 @@ Para executar o servidor, algumas etapas precisam ser feitas(considerando um amb
 
  3) Instale os pacotes Go necessários para o projeto:
     ```sh
-    $ go get github.com/gorilla/websocket
     $ go get github.com/lestrrat-go/libxml2
     $ go get gopkg.in/xmlpath.v1
     ```
     Links para os projetos utilizados:
     
     - https://github.com/lestrrat-go/libxml2
-    - https://github.com/gorilla/websocket
     - https://gopkg.in/xmlpath.v1
     
     O primeiro _go get_ executado ira criar um diretório denominado _go_, localizado em _/home/<nome-usuario>/go_.
