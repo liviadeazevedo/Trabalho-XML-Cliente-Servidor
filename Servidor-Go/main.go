@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"servidorGoXML/serverLogic"
-	//"servidorGoXML/serverConnection"
+	"./serverLogic"
+	//"./serverConnection"
 )
 
 func main() {
