@@ -27,17 +27,12 @@ Para executar o servidor, algumas etapas precisam ser feitas(considerando um amb
     O primeiro _go get_ executado ira criar um diretório denominado _go_, localizado em _/home/<nome-usuario>/go_.
     
 4) Configurar o ambiente de execução do projeto:
-    - Crie uma pasta chamada "servidorGoXML" no diretório _/home/<nome-usuario>/go/src/_ ;
-    - Copie as pastas "serverLogic" e "serverConnection" do repositório para dentro da pasta recém-criada("servidorGoXML");
-    - Entre em cada uma das pastas, e execute o comando:
+    - Entre na pasta _/home/<nome-usuario>/go/src_ e clone este projeto inteiro (pode ser download e extrair ou via terminal com git clone)
+	- abra o terminal em Servidor-Go e execute o bash:
         ```sh
-        $ go build
+        $ ./build.sh
         ```
-        Se não houver algum erro, execute:
-        ```sh
-        $ go install
-        ```
-        Isso irá permitir que os dois pacotes podem ser usados em qualquer programa que os importe.
+        Isso irá permitir que os dois pacotes possam ser usados em qualquer programa que os importe.
         
 **Obs:** Todas as alterações nesses arquivos deverão ser feitas diretamente nos arquivos dentro desses diretórios na pasta do _go_. Caso haja alterações, substitua os arquivos antigos pelos novos com as alterações. Da mesma forma, para commitar no repositório, registre as suas alterações nos arquivos deste repositório e depois commite.
 
@@ -48,8 +43,8 @@ package main
 
 import (
     (...outros imports...)
-    "servidorGoXML/serverLogic"
-	"servidorGoXML/serverConnection"
+    "./serverLogic"
+	"./serverConnection"
 	(...outros imports...)
 )
 
