@@ -1,8 +1,17 @@
 package serverLogic
 
+const (
+	FILES_SOURCE_PATH string = "../Arquivos/"
+	XSD_REQUEST_PATH string = FILES_SOURCE_PATH + "requisicao.xsd"
+	XSD_RESPONSE_PATH string = FILES_SOURCE_PATH + "resposta.xsd"
+	XSD_HISTORICO_PATH string = FILES_SOURCE_PATH + "historico.xsd"
+)
+
 /* envia um boletim como parâmetro e retorna um número inteiro (0 - sucesso, 1 - XML inválido, 2 - XML mal-formado, 3 - Erro Interno) */
 func submeter(Boletim string) int {
 	//...code...
+
+	
 
 	return 0
 }

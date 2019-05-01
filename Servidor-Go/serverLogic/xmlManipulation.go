@@ -17,6 +17,8 @@ import (
 	
 )
 
+const XML_FORMAT_PATH = FILES_SOURCE_PATH + "format-response.xml"
+
 func checkError(err error, print_error bool) bool {
     if err != nil {
 			if print_error{
@@ -67,9 +69,8 @@ func ValidateXML(xml,xsd_path string) bool {
 
 // Constroí a string do xml correspondente para a resposta ao Cliente.
 func BuildXMLResponse(value string) string {
-	
-	xml_format_path := "../Arquivos/format-response.xml"
-  xml_format, err := os.Open(xml_format_path)
+
+  xml_format, err := os.Open(XML_FORMAT_PATH)
   checkError(err,true)
 	defer xml_format.Close()
 		
