@@ -54,7 +54,7 @@ func consultaStatusHandler(xml string) int {
 }
 
 
-func ResquestXMLHandler(xml string) string {
+func RequestXMLHandler(xml string) string {
 	var (
 		xml_resp string
 		cod_int int
