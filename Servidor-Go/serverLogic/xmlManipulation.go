@@ -17,9 +17,11 @@ import (
 	
 )
 
-func checkError(err error) bool {
+func checkError(err error, print_error bool) bool {
     if err != nil {
-			//fmt.Println(err)
+			if print_error{
+				fmt.Println(err)
+			}
 			return true
 		}
 		return false
@@ -29,7 +31,7 @@ func checkError(err error) bool {
 func CheckXML(xml string) bool {
 
 	_, err := libxml2.ParseString(xml)
-	poorly_formatted := checkError(err)
+	poorly_formatted := checkError(err,false)
 
 	if poorly_formatted {
 		fmt.Println("\n===XML is poorly formatted...===")
@@ -44,11 +46,11 @@ func CheckXML(xml string) bool {
 func ValidateXML(xml,xsd_path string) bool {
 
 	schema, err := xsd.ParseFromFile(xsd_path)
-	checkError(err)
+	checkError(err,false)
 	defer schema.Free()
   
 	doc, err := libxml2.ParseString(xml)
-	checkError(err)
+	checkError(err,false)
   
 	if err := schema.Validate(doc); err != nil {
 	  for _, e := range err.(xsd.SchemaValidationError).Errors() {
@@ -66,13 +68,13 @@ func ValidateXML(xml,xsd_path string) bool {
 // Constroí a string do xml correspondente para a resposta ao Cliente.
 func BuildXMLResponse(value string) string {
 	
-	xml_format_path := "Arquivos/format-response.xml"
+	xml_format_path := "../Arquivos/format-response.xml"
   xml_format, err := os.Open(xml_format_path)
-  checkError(err)
+  checkError(err,true)
 	defer xml_format.Close()
 		
 	buffer_xml, err := ioutil.ReadAll(xml_format)
-	checkError(err)
+	checkError(err,true)
 	
 	response_format := string(buffer_xml)
 	response_str := strings.Replace(response_format, "{}", value, 1)

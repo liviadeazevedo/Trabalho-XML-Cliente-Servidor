@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"./serverLogic"
-	//"./serverConnection"
+	_ "./serverConnection"
 )
 
 func main() {

@@ -44,8 +44,8 @@ package main
 import (
     (...outros imports...)
     "./serverLogic"
-	"./serverConnection"
-	(...outros imports...)
+    "./serverConnection"
+    (...outros imports...)
 )
 
 (...código...)
