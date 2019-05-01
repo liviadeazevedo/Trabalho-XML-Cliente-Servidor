@@ -19,6 +19,22 @@ import (
 
 const XML_FORMAT_PATH = FILES_SOURCE_PATH + "format-response.xml"
 
+// Constroí a string do xml correspondente para a resposta ao Cliente.
+func buildXMLResponse(value string) string {
+
+  xml_format, err := os.Open(XML_FORMAT_PATH)
+  checkError(err,true)
+	defer xml_format.Close()
+		
+	buffer_xml, err := ioutil.ReadAll(xml_format)
+	checkError(err,true)
+	
+	response_format := string(buffer_xml)
+	response_str := strings.Replace(response_format, "{}", value, 1)
+
+	return response_str
+}
+
 func checkError(err error, print_error bool) bool {
     if err != nil {
 			if print_error{
@@ -30,7 +46,7 @@ func checkError(err error, print_error bool) bool {
 }
 
 //Verificar sintaxe do xml - bem ou mal formatado.
-func CheckXML(xml string) bool {
+func checkXML(xml string) bool {
 
 	_, err := libxml2.ParseString(xml)
 	poorly_formatted := checkError(err,false)
@@ -44,8 +60,18 @@ func CheckXML(xml string) bool {
 	return poorly_formatted
 }
 
+//Obs: Uso do XPath sujeito a alteração
+func extractParameterValue(xml,xpath string) string {
+
+	var value string
+
+	//...(code)...
+
+	return value
+}
+
 //Valida um xml dado um xsd.
-func ValidateXML(xml,xsd_path string) bool {
+func validateXML(xml,xsd_path string) bool {
 
 	schema, err := xsd.ParseFromFile(xsd_path)
 	checkError(err,false)
@@ -65,20 +91,4 @@ func ValidateXML(xml,xsd_path string) bool {
 	fmt.Println("===Validation Successful!===")
 
 	return true
-}
-
-// Constroí a string do xml correspondente para a resposta ao Cliente.
-func BuildXMLResponse(value string) string {
-
-  xml_format, err := os.Open(XML_FORMAT_PATH)
-  checkError(err,true)
-	defer xml_format.Close()
-		
-	buffer_xml, err := ioutil.ReadAll(xml_format)
-	checkError(err,true)
-	
-	response_format := string(buffer_xml)
-	response_str := strings.Replace(response_format, "{}", value, 1)
-
-	return response_str
 }
