@@ -27,6 +27,8 @@ const (
 	XSD_REQUEST_PATH string = FILES_SOURCE_PATH + "requisicao.xsd"
 	XSD_RESPONSE_PATH string = FILES_SOURCE_PATH + "resposta.xsd"
 	XSD_HISTORICO_PATH string = FILES_SOURCE_PATH + "historico.xsd"
+	XPATH_METHODS_ONE_PARAMETER string = "/requisicao/metodo/parametros/parametro[1]/valor"
+	XPATH_METHOD_NAME string = "/requisicao/metodo/nome"
 )
 
 func submeterHandler(xml string) int {
@@ -35,7 +37,7 @@ func submeterHandler(xml string) int {
 		boletim string
 	) 
 
-	boletim = extractParameterValue(xml,"<xpath-do-elemento-parametro-historico>")
+	boletim = extractParameterValue(xml,XPATH_METHODS_ONE_PARAMETER)
 	cod = submeter(boletim)
 
 	return cod
@@ -47,7 +49,7 @@ func consultaStatusHandler(xml string) int {
 		cpf string
 	) 
 
-	cpf = extractParameterValue(xml,"<xpath-do-elemento-parametro-cpf>")
+	cpf = extractParameterValue(xml,XPATH_METHODS_ONE_PARAMETER)
 	cod = consultaStatus(cpf)
 	
 	return cod
@@ -61,8 +63,7 @@ func RequestXMLHandler(xml string) string {
 		method_name string
 	)
 
-	//Obs: Uso do XPath sujeito a alteração
-	method_name = strings.ToLower(extractParameterValue(xml,"<xpath-do-elemento-nome>"))
+	method_name = strings.ToLower(extractParameterValue(xml,XPATH_METHOD_NAME))
 
 	switch  method_name {
 		case "submeter":

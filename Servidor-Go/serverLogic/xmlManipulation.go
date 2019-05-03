@@ -11,10 +11,8 @@ import (
 	"github.com/lestrrat-go/libxml2"
 	//"github.com/lestrrat-go/libxml2/parser"
 	//"github.com/lestrrat-go/libxml2/types"
-	//"github.com/lestrrat-go/libxml2/xpath"
+	"github.com/lestrrat-go/libxml2/xpath"
 	"github.com/lestrrat-go/libxml2/xsd"
-
-	
 )
 
 const XML_FORMAT_PATH = FILES_SOURCE_PATH + "format-response.xml"
@@ -60,13 +58,23 @@ func checkXML(xml string) bool {
 	return poorly_formatted
 }
 
-//Obs: Uso do XPath sujeito a alteração
-func extractParameterValue(xml,xpath string) string {
+//Retorna o valor em string do element selecionado dado XPath.
+func extractParameterValue(xml,xpath_str string) string {
 
 	var value string
 
-	//...(code)...
+	doc, err := libxml2.ParseString(xml)
+	checkError(err,false)
 
+	root_xml, err := doc.DocumentElement()
+	checkError(err,false)
+
+	ctx, err := xpath.NewContext(root_xml)
+	checkError(err,false)
+	defer ctx.Free()
+
+	value = xpath.String(ctx.Find(xpath_str))
+	
 	return value
 }
 
