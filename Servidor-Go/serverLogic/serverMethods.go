@@ -20,46 +20,41 @@ msg_enviar = []byte(resposta)
 
 package serverLogic
 
-import  "strings"
+import (
+	"strings"
+	"strconv"
+)
 
 const (
 	FILES_SOURCE_PATH string = "../Arquivos/"
 	XSD_REQUEST_PATH string = FILES_SOURCE_PATH + "requisicao.xsd"
 	XSD_RESPONSE_PATH string = FILES_SOURCE_PATH + "resposta.xsd"
 	XSD_HISTORICO_PATH string = FILES_SOURCE_PATH + "historico.xsd"
-	XPATH_METHODS_ONE_PARAMETER string = "/requisicao/metodo/parametros/parametro[1]/valor"
 	XPATH_METHOD_NAME string = "/requisicao/metodo/nome"
 )
 
-func submeterHandler(xml string) int {
+func methodHandler(xml string, method func(map[string]string)string, num_parms int) (ret_value string) {
+
 	var (
-		cod int
-		boletim string
-	) 
+		parms map[string]string
+		execute bool	
+	)
 
-	boletim = extractParameterValue(xml,XPATH_METHODS_ONE_PARAMETER)
-	cod = submeter(boletim)
+	parms = extractParametersValues(xml, num_parms)
+	execute = checkParametersNumber(parms,num_parms)
 
-	return cod
+	if execute {
+		ret_value = method(parms)
+		return	
+	}else{
+		return "Wrong parameters number."
+	}
 }
-
-func consultaStatusHandler(xml string) int {
-	var (
-		cod int
-		cpf string
-	) 
-
-	cpf = extractParameterValue(xml,XPATH_METHODS_ONE_PARAMETER)
-	cod = consultaStatus(cpf)
-	
-	return cod
-}
-
 
 func RequestXMLHandler(xml string) string {
 	var (
 		xml_resp string
-		cod_int int
+		resp string
 		method_name string
 	)
 
@@ -67,28 +62,36 @@ func RequestXMLHandler(xml string) string {
 
 	switch  method_name {
 		case "submeter":
-			cod_int = submeterHandler(xml)
+			resp = methodHandler(xml,submeter,1)
 		case "consultastatus":
-			cod_int = consultaStatusHandler(xml)
+			resp = methodHandler(xml,consultaStatus,1)
 	}
 
-	xml_resp = buildXMLResponse(string(cod_int))
+	xml_resp = buildXMLResponse(resp)
 	return xml_resp
 }
 
 /* envia um boletim como parâmetro e retorna um número inteiro (0 - sucesso, 1 - XML inválido, 2 - XML mal-formado, 3 - Erro Interno) */
-func submeter(Boletim string) int {
+
+//func submeter(Boletim string) int
+func submeter(parms map[string]string) string {
 	
 	//...(code)...
 
-	return 0
+	return "0"
 }
 
 /* consulta o status da inscrição do candidato com o CPF informado como parâmetro. Possíveis retornos: 0 - Candidato não encontrado, 1 - Em processamento, 
 2 - Candidato Aprovado e Selecionado, 3 - Candidato Aprovado e em Espera, 4 - Candidato Não Aprovado. */
-func consultaStatus(cpf string) int {
-	
-	//...(code)...
-	
-	return 0
+
+//func consultaStatus(cpf string) int
+func consultaStatus(parms map[string]string) string {
+
+	cpf_int,_ := strconv.Atoi(parms["cpf"])
+
+	if validsCodes(cpf_int) {
+		return strconv.Itoa(cpf_int)
+	}else{
+		return "0"
+	}
 }
