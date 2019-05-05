@@ -56,7 +56,7 @@ func checkXML(xml string) bool {
 		fmt.Println("===XML is well formatted!===")
 	}
 
-	return poorly_formatted
+	return !poorly_formatted
 }
 
 //Retorna o valor em string do element selecionado dado XPath.
@@ -91,38 +91,42 @@ func extractParametersValues(xml string, qtd_params int) (map[string]string) {
 	params := make(map[string]string)
 
 	for i := 1; i <= qtd_params; i++ {
-		fmt.Println(i)
 		aux_format_xpath = strings.Replace(aux_format_xpath,strconv.Itoa(i-1),strconv.Itoa(i),1)
-		fmt.Println(aux_format_xpath)
 
 		aux_name = extractParameterValue(xml,aux_format_xpath + "/nome")
 		aux_value = extractParameterValue(xml,aux_format_xpath + "/valor")
 		params[aux_name] = aux_value
-
 	}
 
 	return params
 }
 
 //Valida um xml dado um xsd.
-func validateXML(xml,xsd_path string) bool {
+func validateXML(xml,xsd_path string) (bool,bool) {
 
 	schema, err := xsd.ParseFromFile(xsd_path)
-	checkError(err,false)
+	error := checkError(err,false)
+	if error {
+		return false,true
+	}
+
 	defer schema.Free()
   
 	doc, err := libxml2.ParseString(xml)
-	checkError(err,false)
+	error = checkError(err,false)
+	if error {
+		return false,true
+	}
   
 	if err := schema.Validate(doc); err != nil {
 	  for _, e := range err.(xsd.SchemaValidationError).Errors() {
 			fmt.Println("Error: ", e.Error())
 		}
 		fmt.Println("===XML is not valid...===")
-	  return false
+	  return false,false
 	}
   
 	fmt.Println("===Validation Successful!===")
 
-	return true
+	return true,false
 }
