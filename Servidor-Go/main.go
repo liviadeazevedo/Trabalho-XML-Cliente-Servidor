@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	//"./serverLogic"
+	"./serverLogic"
 	"./serverConnection"
 )
+
 /*
 func serverLogicTest(){
 	xml := "<resposta><retorno>0</retorno></resposta>"
@@ -18,14 +19,8 @@ func recieveNotify(msg []byte, clinetId int) []byte {
 		resposta string
 	)
 	xml = string(msg)
-	fmt.Println("\n\n======== mensagem recebida do cliente: \n", xml)
-	//resposta = serverLogic.RequestXMLHandler(xml)
-	resposta = "vc enviou yeah!"
-	fmt.Println("======== resposta a ser enviada para o cliente: \n", resposta)
+	resposta = serverLogic.RequestXMLHandler(xml)
 	return []byte(resposta)
-	//serverConnection.SendToClient([]byte(resposta), clinetId)
-	
-	//fmt.Println("fui notificado com : '", string(msg), "'")
 }
 
 func serverConnectionTest(){
@@ -36,19 +31,4 @@ func serverConnectionTest(){
 
 func main() {
 	serverConnectionTest()
-/*	
-	a := 123
-
-	b := strconv.Itoa(a)
-	b = "00000"+b
-
-	fmt.Println(b[len(b)-5:])
-*/	
-	/*
-	serverConnection.Init()
-	serverConnection.RegisterObserver(recieveNotify)
-
-	serverConnection.Notify()
-	*/
-
 }

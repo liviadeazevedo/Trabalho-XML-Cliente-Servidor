@@ -6,6 +6,7 @@ import (
 	"os"
 	"bufio"
 	"strconv"
+//	"sync"
 )
 
 const (
@@ -20,11 +21,20 @@ var (
 )
 
 func Init(){
-	observerList = make([]func([]byte, int)[]byte, 0)
-	clinetConnList = make([]net.Conn, 0)
+	if observerList == nil{
+		observerList = make([]func([]byte, int)[]byte, 0)
+	}
+	if clinetConnList == nil{
+		clinetConnList = make([]net.Conn, 0)
+	}
 }
 
 func Restart(){
+	observerList = nil
+	for _, clienteSocket := range clinetConnList {
+		clienteSocket.Close()
+	}
+	clinetConnList = nil
 	Init()
 }
 
@@ -36,6 +46,7 @@ func OpenListener(){
 		fmt.Println("Erro listening:", err.Error())
 		os.Exit(1)
 	}
+	//defer wg.Done()
 	// Close the listener when the application closes.
 	defer l.Close()
 
@@ -110,6 +121,9 @@ func handleRequest(conn net.Conn) {
 	conn.Close()
 }
 func RegisterObserver(recieveNotify func([]byte, int)[]byte){
+	if observerList == nil{
+		observerList = make([]func([]byte, int)[]byte, 0)
+	}
 	observerList = append(observerList, recieveNotify)
 }
 
@@ -124,8 +138,10 @@ func SendToClient(msg []byte, clinetId int){
 
 	tamMsg := strconv.Itoa(len(msg))
 	tamMsg = "00000" + tamMsg
+	tamMsg = tamMsg[len(tamMsg) - 5:]
 
-	conn.Write([]byte(tamMsg[len(tamMsg) - 5:]))
+	fmt.Println("\ntamanho da mensagem enviado ", tamMsg)
+	conn.Write([]byte(tamMsg))
 	conn.Write(msg)
 	
 	return 
