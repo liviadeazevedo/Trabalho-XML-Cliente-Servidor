@@ -23,6 +23,7 @@ package serverLogic
 import (
 	"strings"
 	"strconv"
+	_ "fmt"
 )
 
 const (
@@ -75,8 +76,25 @@ func RequestXMLHandler(xml string) string {
 
 //func submeter(Boletim string) int
 func submeter(parms map[string]string) string {
+
+	if parms["Boletim"] == "" {
+		return "3"
+	}
+
+	correct_formated := checkXML(parms["Boletim"])
+	if !correct_formated {
+		return "2"
+	}
+
+	valid_xml, internal_error := validateXML(parms["Boletim"],XSD_HISTORICO_PATH)
 	
-	//...(code)...
+	if internal_error{
+		return "3"
+	}
+	
+	if !valid_xml {
+		return "1"
+	}
 
 	return "0"
 }
