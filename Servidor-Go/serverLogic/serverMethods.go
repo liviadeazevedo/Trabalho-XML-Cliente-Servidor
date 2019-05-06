@@ -1,23 +1,3 @@
-/*
-
-//(...codigo servidor...)
-
-//msg seria em []byte, provavelmente, e gostaria também que aqui só tenha as informações do xml, sem a parte do tamanho.
-xml = string(msg)
-
-//"resposta" seria uma string do xml de reposta a ser enviado ao Cliente.
-//Ex de string retornada da resposta: 	<resposta>
-//    										<retorno>0</retorno>
-//										</resposta>
-resposta = serverLogic.ResquestXMLHandler(xml) //Interface da lógica do XML, que vou implmentar.
-
-//Converte a string em []byte para poder enviar ao Cliente de volta
-msg_enviar = []byte(resposta)
-
-//(...codigo servidor...)
-
-*/
-
 package serverLogic
 
 import (
@@ -32,23 +12,33 @@ const (
 	XSD_RESPONSE_PATH string = FILES_SOURCE_PATH + "resposta.xsd"
 	XSD_HISTORICO_PATH string = FILES_SOURCE_PATH + "historico.xsd"
 	XPATH_METHOD_NAME string = "/requisicao/metodo/nome"
+	MSG_NUMBER_PARAMETERS_WRONG string = "Wrong parameters number. Check the method parameters." 
+	MSG_INVALID_METHOD_NAME string = "Invalid method name. Select a valid one."
+	MSG_FAILED_PARSE_XML_RESPONSE string = "Failed to parser request XML. Please, check the request XML."
+	MSG_FAILED_EXTRACT_PARMS_VALUES string = "Failed in extract parameters values from XML request."
 )
 
 func methodHandler(xml string, method func(map[string]string)string, num_parms int) (ret_value string) {
 
 	var (
 		parms map[string]string
-		execute bool	
+		execute bool
+		error_sys bool	
 	)
 
-	parms = extractParametersValues(xml, num_parms)
+	parms, error_sys = extractParametersValues(xml, num_parms)
+
+	if error_sys {
+		return MSG_FAILED_EXTRACT_PARMS_VALUES
+	}
+
 	execute = checkParametersNumber(parms,num_parms)
 
 	if execute {
 		ret_value = method(parms)
 		return	
 	}else{
-		return "Wrong parameters number."
+		return MSG_NUMBER_PARAMETERS_WRONG
 	}
 }
 
@@ -57,15 +47,26 @@ func RequestXMLHandler(xml string) string {
 		xml_resp string
 		resp string
 		method_name string
+		error_sys bool
 	)
 
-	method_name = strings.ToLower(extractParameterValue(xml,XPATH_METHOD_NAME))
+	method_name,error_sys = extractParameterValue(xml,XPATH_METHOD_NAME)
+
+	if error_sys {
+		resp = MSG_FAILED_PARSE_XML_RESPONSE
+	}
+
+	method_name = strings.ToLower(method_name)
 
 	switch  method_name {
 		case "submeter":
 			resp = methodHandler(xml,submeter,1)
 		case "consultastatus":
 			resp = methodHandler(xml,consultaStatus,1)
+		default:
+			if !error_sys {
+				resp = MSG_INVALID_METHOD_NAME	
+			}
 	}
 
 	xml_resp = buildXMLResponse(resp)
@@ -77,18 +78,21 @@ func RequestXMLHandler(xml string) string {
 //func submeter(Boletim string) int
 func submeter(parms map[string]string) string {
 
-	if parms["Boletim"] == "" {
-		return "3"
+	parms_names := []string{"boletim"}
+
+	msg_error, valid_parms := haveAllParameters(parms_names, parms)
+	if !valid_parms {
+		return msg_error
 	}
 
-	correct_formated := checkXML(parms["Boletim"])
+	correct_formated := checkXML(parms[parms_names[0]])
 	if !correct_formated {
 		return "2"
 	}
 
-	valid_xml, internal_error := validateXML(parms["Boletim"],XSD_HISTORICO_PATH)
+	valid_xml, error_sys := validateXML(parms[parms_names[0]],XSD_HISTORICO_PATH)
 	
-	if internal_error{
+	if error_sys{
 		return "3"
 	}
 	
@@ -105,7 +109,14 @@ func submeter(parms map[string]string) string {
 //func consultaStatus(cpf string) int
 func consultaStatus(parms map[string]string) string {
 
-	cpf_int,_ := strconv.Atoi(parms["cpf"])
+	parms_names := []string{"cpf"}
+
+	msg_error, valid_parms := haveAllParameters(parms_names, parms)
+	if !valid_parms {
+		return msg_error
+	}
+
+	cpf_int,_ := strconv.Atoi(parms[parms_names[0]])
 
 	if validsCodes(cpf_int) {
 		return strconv.Itoa(cpf_int)
