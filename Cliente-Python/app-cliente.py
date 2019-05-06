@@ -64,9 +64,9 @@ class ClientSocket(Thread):
         ''' Método para envio de mensagens'''
         HDRLEN = str(len(msg))
         prt_hdr = str(len(HDRLEN))
-        if len(prt_hdr) < 2:
+        if len(prt_hdr) < self.pHdr_len:
             prt_hdr = '0' + prt_hdr
-        elif len(prt_hdr) > 2:
+        elif len(prt_hdr) > self.pHdr_len:
             raise RuntimeError("Proto Cabeçalho maior que 2 bytes")
         data = (prt_hdr + HDRLEN + msg).encode("utf-8")
         total_len = len(data)
