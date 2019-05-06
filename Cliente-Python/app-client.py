@@ -12,7 +12,6 @@ TESTE = False
 
 ###########
 
-on = True
 received_msg = ''
 lock = Lock()
 
@@ -25,21 +24,20 @@ class ClientSocket(Thread):
         else:
             self.sock = sock
 
+        self.pHdr_len = 5
+        self.recvBuffer = b''
+        self.onThread = True
+
         addrsFileLines = open("addrs.txt", "r").readlines()
         self.host, self.port = addrsFileLines[0], int(addrsFileLines[1])
 
     def run(self):
         # Método que implementa o que a Thread roda
-        pass
         # global on
         # global received_msg
         #
-        # while on:
-        #     msg = self.receive()
-        #     with lock:
-        #         received_msg = msg
-        #     if not received_msg:
-        #         exit(0)
+        while self.onThread:
+            self._receive()
 
     def defineAddrs(self):
         addrsFile = open("addrs.txt", "w")
@@ -71,12 +69,50 @@ class ClientSocket(Thread):
 
         self.start()
 
-    def receive(self):
-        self.rcvBuffer = []
-        bytes_recd = 0
-        # if chunk == b'':
-        #     raise RuntimeError("socket connection broken")
+    def _receive(self):
+        bytes_recv = 0
 
+        try:
+            data = self.sock.recv(4096)
+        except BlockingIOError:
+            pass
+        else:
+            if data:
+                self.recvBuffer += data
+                bytes_recv = len(data)
+            else:
+                raise RuntimeError("Peer closed.")
+
+    def _read_protoheader(self):
+        if len(self.recvBuffer) >= self.pHdr_len:
+            hdr_len = self.recvBuffer[:self.pHdr_len]
+            self._recv_buffer = self._recv_buffer[self.pHdr_len:]
+            return int(hdr_len)
+
+    def _read_header(self, hdr_len):
+        header = 0
+        if len(self._recv_buffer) >= hdr_len:
+            header = self.recvBuffer[:hdr_len]
+            self._recv_buffer = self._recv_buffer[hdr_len:]
+            # Interessante caso o cabeçalho tenha mais de um item
+            # for reqhdr in ("byteorder","content-length","content-type","content-encoding",):
+            #     if reqhdr not in self.jsonheader:
+            #         raise ValueError(f'Missing required header "{reqhdr}".')
+        return int(header)
+
+    def _read_msg(self, msg_len):
+        msg = None
+        if len(self._recv_buffer) >= msg_len:
+            msg = self.recvBuffer[:msg_len]
+            self._recv_buffer = self._recv_buffer[msg_len:]
+        return msg
+
+    def read(self):
+        hdr_len = self._read_protoheader()
+
+        header = self._read_header(hdr_len)
+
+        return self._read_msg(header)
 
     def pscan(self, port):
         ''' Scaner de port'''
