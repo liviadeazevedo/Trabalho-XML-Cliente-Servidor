@@ -29,7 +29,8 @@ class ClientSocket(Thread):
         self.onThread = True
 
         addrsFileLines = open("addrs.txt", "r").readlines()
-        self.host, self.port = addrsFileLines[0], int(addrsFileLines[1])
+
+        self.host, self.port = addrsFileLines[0][:-1], int(addrsFileLines[1])
 
     def run(self):
         # Método que implementa o que a Thread roda
@@ -51,28 +52,44 @@ class ClientSocket(Thread):
         if port is not None:
             self.port = port
         try:
-            self.sock.connect((host, port))
+            self.sock.connect((self.host, self.port))
+            self.start()
             return True
 
         except Exception as e:
+            print(e)
             return False
 
     def send(self, msg):
         ''' Método para envio de mensagens'''
-        MSGLEN = len(msg)
+        HDRLEN = str(len(msg))
+        prt_hdr = str(len(HDRLEN))
+        if len(prt_hdr) < 2:
+            prt_hdr = '0' + prt_hdr
+        elif len(prt_hdr) > 2:
+            raise RuntimeError("Proto Cabeçalho maior que 2 bytes")
+        data = (prt_hdr + HDRLEN + msg).encode("utf-8")
+        total_len = len(data)
         totalsent = 0
-        while totalsent < MSGLEN:
-            sent = self.sock.send(msg[totalsent:])
-            if sent == 0:
-                raise RuntimeError("socket connection broken")
-            totalsent = totalsent + sent
+        print(data)
 
-        self.start()
+        while totalsent < total_len:
+            try:
+                sent = self.sock.send(data[totalsent:])
+            except Exception as e:
+                print(e)
+
+            else:
+                if sent == 0:
+                    raise RuntimeError("socket connection broken")
+
+                totalsent += sent
 
     def _receive(self):
         bytes_recv = 0
 
         try:
+            print(self.sock)
             data = self.sock.recv(4096)
         except BlockingIOError:
             pass
@@ -86,14 +103,14 @@ class ClientSocket(Thread):
     def _read_protoheader(self):
         if len(self.recvBuffer) >= self.pHdr_len:
             hdr_len = self.recvBuffer[:self.pHdr_len]
-            self._recv_buffer = self._recv_buffer[self.pHdr_len:]
+            self.recvBuffer = self.recvBuffer[self.pHdr_len:]
             return int(hdr_len)
 
     def _read_header(self, hdr_len):
         header = 0
-        if len(self._recv_buffer) >= hdr_len:
+        if len(self.recvBuffer) >= hdr_len:
             header = self.recvBuffer[:hdr_len]
-            self._recv_buffer = self._recv_buffer[hdr_len:]
+            self.recvBuffer = self.recvBuffer[hdr_len:]
             # Interessante caso o cabeçalho tenha mais de um item
             # for reqhdr in ("byteorder","content-length","content-type","content-encoding",):
             #     if reqhdr not in self.jsonheader:
@@ -102,17 +119,30 @@ class ClientSocket(Thread):
 
     def _read_msg(self, msg_len):
         msg = None
-        if len(self._recv_buffer) >= msg_len:
+        if len(self.recvBuffer) >= msg_len:
             msg = self.recvBuffer[:msg_len]
-            self._recv_buffer = self._recv_buffer[msg_len:]
+            self.recvBuffer = self.recvBuffer[msg_len:]
         return msg
 
     def read(self):
-        hdr_len = self._read_protoheader()
+        hdr_len = None
+        header = None
+        msg = None
 
-        header = self._read_header(hdr_len)
+        if hdr_len is None:
+            hdr_len = self._read_protoheader()
 
-        return self._read_msg(header)
+        if hdr_len is not None:
+            if header is None:
+                header = self._read_header(hdr_len)
+
+        if header:
+            if msg is None:
+                msg = self._read_msg(header)
+        else:
+            print("Sem mensgagem para ler")
+
+        return msg
 
     def pscan(self, port):
         ''' Scaner de port'''
@@ -121,6 +151,10 @@ class ClientSocket(Thread):
             return True
         except Exception as e:
             return False
+
+    def close(self):
+        self.onThread = False
+        self.sock.close()
 
 class Candidato():
     def __init__(self, cpf):
@@ -193,7 +227,18 @@ def main():
 
     pass
 
+def teste():
+    '''Operações de teste'''
+    c = ClientSocket()
+    print(c.sock)
+    print(c.host)
+    print(c.port)
+    c.connect()
+    input("[PRESS ENTER] para enviar mensagem.")
+    c.send("oi e ai, tamo enviando mensagem direito? sei não hora do teste seu buldog de bosta")
+    c.close()
 
+    pass
 # Função comentada para consulta de operações necessárias
 '''def run():
 
@@ -227,3 +272,5 @@ def main():
                 received_msg = ''
                 waiting_HE = False
 '''
+
+teste()
