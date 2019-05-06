@@ -24,7 +24,7 @@ class ClientSocket(Thread):
         else:
             self.sock = sock
 
-        self.pHdr_len = 5
+        self.pHdr_len = 2
         self.recvBuffer = b''
         self.onThread = True
 
