@@ -200,6 +200,20 @@ class ControladorXML():
         else:
             return False
 
+    def criarRequisicao(self, nome_func, dict_param):
+        root = etree.Element("requisicao")
+        metodo = etree.SubElement(root, "metodo")
+        etree.SubElement(metodo, "nome").text = nome_func
+        parametros = etree.SubElement(metodo, "parametros")
+        for nome, valor in dict_param.items():
+            parametro = etree.SubElement(parametros, "parametro")
+            etree.SubElement(parametro, "nome").text = nome
+            etree.SubElement(parametro, "valor").text = valor
+
+        return root
+
+
+
 class FronteiraInter():
     def entrarCandidato(self):
         return
@@ -229,8 +243,20 @@ def main():
 
 def teste():
     '''Operações de teste'''
-    pass
+    # c = ClientSocket()
+    # print(c.host)
+    # print(c.port)
+    # c.connect()
+    # input("[PRESS ENTER] para enviar mensagem.")
+    # c.send("teste")
+    # c.close()
 
+    ctrlXML = ControladorXML()
+
+    xml = ctrlXML.criarRequisicao("consultaStatus", {'cpf': '0001'})
+
+    print(etree.tostring(xml))
+    pass
 # Função comentada para consulta de operações necessárias
 '''def run():
 
