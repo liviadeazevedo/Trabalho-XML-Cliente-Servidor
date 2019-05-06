@@ -229,16 +229,8 @@ def main():
 
 def teste():
     '''Operações de teste'''
-    c = ClientSocket()
-    print(c.sock)
-    print(c.host)
-    print(c.port)
-    c.connect()
-    input("[PRESS ENTER] para enviar mensagem.")
-    c.send("oi e ai, tamo enviando mensagem direito? sei não hora do teste seu buldog de bosta")
-    c.close()
-
     pass
+
 # Função comentada para consulta de operações necessárias
 '''def run():
 
