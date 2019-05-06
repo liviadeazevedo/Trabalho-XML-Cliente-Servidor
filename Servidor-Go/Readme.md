@@ -33,8 +33,6 @@ Para executar o servidor, algumas etapas precisam ser feitas(considerando um amb
         $ ./build.sh
         ```
         Isso irá permitir que os dois pacotes possam ser usados em qualquer programa que os importe.
-        
-**Obs:** Todas as alterações nesses arquivos deverão ser feitas diretamente nos arquivos dentro desses diretórios na pasta do _go_. Caso haja alterações, substitua os arquivos antigos pelos novos com as alterações. Da mesma forma, para commitar no repositório, registre as suas alterações nos arquivos deste repositório e depois commite.
 
 Por fim, para usar todas as funcionalidades disponíveis nesses pacotes, basta importá-los para seu programa:
 
