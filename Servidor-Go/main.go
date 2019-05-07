@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"./serverLogic"
 	"./serverConnection"
+	//"strconv"
 )
 
 /*
@@ -13,14 +14,14 @@ func serverLogicTest(){
 
 }
 */
-func recieveNotify(msg []byte, clinetId int) []byte {
+func recieveNotify(msg []byte, clinetId int, protocolo int) {
 	var (
 		xml string
 		resposta string
 	)
 	xml = string(msg)
 	resposta = serverLogic.RequestXMLHandler(xml)
-	return []byte(resposta)
+	serverConnection.SendToClient([]byte(resposta), clinetId, protocolo)
 }
 
 func serverConnectionTest(){
@@ -31,4 +32,7 @@ func serverConnectionTest(){
 
 func main() {
 	serverConnectionTest()
+	//a := []byte("02")
+	//fmt.Println(strconv.Atoi(string(a)))
+
 }
