@@ -24,6 +24,7 @@ class ClientSocket(Thread):
         else:
             self.sock = sock
 
+        self._hdr_num = 2
         self.pHdr_len = 2
         self.recvBuffer = b''
         self.onThread = True
@@ -43,7 +44,7 @@ class ClientSocket(Thread):
     def defineAddrs(self):
         addrsFile = open("addrs.txt", "w")
         self.host = input("host:")
-        self.port = input("port:")
+        self.port = int(input("port:"))
         addrsFile.write(self.host + "\n" + str(self.port))
 
     def connect(self, host=None, port=None):
@@ -52,13 +53,17 @@ class ClientSocket(Thread):
         if port is not None:
             self.port = port
         try:
-            self.sock.connect((self.host, self.port))
+            # self.sock.connect((self.host, self.port))
             self.start()
             return True
 
         except Exception as e:
             print(e)
             return False
+
+    def proto_define_connect(self):
+        if self.connect():
+            self.sock.send(str(self._hdr_num).encode("utf-8"))
 
     def send(self, msg):
         ''' Método para envio de mensagens'''
@@ -89,7 +94,6 @@ class ClientSocket(Thread):
         bytes_recv = 0
 
         try:
-            print(self.sock)
             data = self.sock.recv(4096)
         except BlockingIOError:
             pass
@@ -156,6 +160,53 @@ class ClientSocket(Thread):
         self.onThread = False
         self.sock.close()
 
+class ClientSimple(ClientSocket):
+    def __init__(self):
+        super().__init__()
+        self.pHdr_len = 5
+        self._hdr_num = 1
+
+    def send(self, msg):
+        ''' Método para envio de mensagens'''
+        hdr_len = str(len(msg))
+
+        if len(hdr_len) < self.pHdr_len:
+            hdr_len = ('0' * self.pHdr_len) + hdr_len
+
+        elif len(hdr_len) > self.pHdr_len:
+            raise RuntimeError("Proto Cabeçalho maior que " + str(self.pHdr_len) + " bytes")
+
+        data = (hdr_len[-self.pHdr_len:] + msg).encode("utf-8")
+        total_len = len(data)
+        totalsent = 0
+
+        while totalsent < total_len:
+            try:
+                sent = self.sock.send(data[totalsent:])
+            except Exception as e:
+                print(e)
+
+            else:
+                if sent == 0:
+                    raise RuntimeError("socket connection broken")
+
+                totalsent += sent
+
+    def read(self):
+        msg_len = None
+        msg = None
+
+        if msg_len is None:
+            msg_len = self._read_protoheader()
+
+        if msg_len is not None:
+            if msg is None:
+                msg = self._read_msg(msg_len)
+        else:
+            print("Sem mensgagem para ler")
+
+        return msg
+
 class Candidato():
     def __init__(self, cpf):
         self.cpf = cpf
@@ -212,8 +263,6 @@ class ControladorXML():
 
         return root
 
-
-
 class FronteiraInter():
     def entrarCandidato(self):
         return
@@ -243,20 +292,23 @@ def main():
 
 def teste():
     '''Operações de teste'''
-    # c = ClientSocket()
-    # print(c.host)
-    # print(c.port)
-    # c.connect()
-    # input("[PRESS ENTER] para enviar mensagem.")
-    # c.send("teste")
-    # c.close()
+    c = ClientSocket()
+    # c.defineAddrs()
+    print(c.host)
+    print(c.port)
 
-    ctrlXML = ControladorXML()
 
-    xml = ctrlXML.criarRequisicao("consultaStatus", {'cpf': '0001'})
+    c.proto_define_connect()
+    input("[PRESS ENTER] para enviar mensagem.")
+    c.send("teste")
+    c.close()
 
-    print(etree.tostring(xml))
-    pass
+    # ctrlXML = ControladorXML()
+    #
+    # xml = ctrlXML.criarRequisicao("consultaStatus", {'cpf': '0001'})
+    #
+    # print(etree.tostring(xml))
+    # pass
 # Função comentada para consulta de operações necessárias
 '''def run():
 
