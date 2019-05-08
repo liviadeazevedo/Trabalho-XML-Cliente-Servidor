@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"./serverLogic"
+
 	"./serverConnection"
+	"./serverLogic"
 	//"strconv"
 )
 
@@ -16,7 +17,7 @@ func serverLogicTest(){
 */
 func recieveNotify(msg []byte, clinetId int, protocolo int) {
 	var (
-		xml string
+		xml      string
 		resposta string
 	)
 	xml = string(msg)
@@ -24,7 +25,7 @@ func recieveNotify(msg []byte, clinetId int, protocolo int) {
 	serverConnection.SendToClient([]byte(resposta), clinetId, protocolo)
 }
 
-func serverConnectionTest(){
+func serverConnectionTest() {
 	fmt.Println("se registrando no observer")
 	serverConnection.RegisterObserver(recieveNotify)
 	serverConnection.OpenListener()

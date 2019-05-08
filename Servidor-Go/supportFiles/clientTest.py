@@ -3,6 +3,7 @@
 #arg[1] = opção 'file' ou 'local'
 #arg[2] = se opção for 'file', dizer o nome do arquivo a ser lido(diretório referência já
 # para a pasta 'Arquivos').
+#arg[3] = se opção for '1', faz o protocolo 1, se for '2', faz o protocolo 2.
 
 import os
 import sys
@@ -10,7 +11,7 @@ import sys
 host="127.0.0.1"            # Set the server address to variable host
 
 port=4446               # Sets the variable port to 4444
-protocol="2"
+protocol=sys.argv[3]
 
 from socket import *             # Imports socket module
 
