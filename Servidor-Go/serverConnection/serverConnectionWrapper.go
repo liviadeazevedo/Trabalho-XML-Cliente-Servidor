@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"bufio"
+	//"bufio"
 	"strconv"
 	"sync"
 )
@@ -73,7 +73,7 @@ func readIncomingMsg(conn net.Conn, tamBuffer int) ([]byte, error){
 	// Make a buffer to hold incoming data.
 	buf := make([]byte, tamBuffer)
 	// Read the incoming connection into the buffer.
-	reqLen, err := bufio.NewReader(conn).Read(buf) //conn.Read(buf)
+	reqLen, err := conn.Read(buf) //conn.Read(buf)
 
 	fmt.Println("\n bytes a ler ", tamBuffer, "\n bytes lidos ", reqLen, "\n msg lida ", string(buf), "\n")
 	if err != nil {
@@ -170,7 +170,7 @@ func readCommunicationWithHeader(conn net.Conn) ([]byte, error){
 		return nil, err
 	}
 
-	fmt.Println("Número de bytes lidos do cliente: ",string(tamMsg))
+	fmt.Println("Número de bytes lidos do cliente: ",tamMsg)
 	fmt.Println("Array de bytes lido convertido para string:\n\n ",string(buf))
 
 	return buf, nil

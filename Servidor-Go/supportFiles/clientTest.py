@@ -31,11 +31,11 @@ def protocol1Communication(msg, tamStr):
     
     s.send(taml5b.encode('utf-8'))
 
-    print("tamanho enviado\nenviando mensagem")
+    print("tamanho enviado\nenviando mensagem\n\n", msg)
     s.send(msg.encode('utf-8'))
     
     print("\n\nmensagem enviada\nesperando tamanho")
-    size = int(str((s.recv(5)).decode("utf-8")))
+    size = int(str(s.recv(5).decode('utf-8')))
     print("\ntamnho recebido\nesperando recebimento da mensagem de tamanho " + str(size))
     return str(s.recv(size))
 
@@ -45,7 +45,7 @@ def protocol2Communication(msg, tamStr):
 
     print("\ntamCabecalho2b ", tamCabecalho2b, "\n tamMsg ", tamStr)
     s.send(tamCabecalho2b.encode('utf-8'))
-    s.send(str(tamStr).encode('utf-8'))
+    s.send(tamStr.encode('utf-8'))
     print("tamanho enviado\nenviando mensagem")
     s.send(msg.encode('utf-8'))
 
