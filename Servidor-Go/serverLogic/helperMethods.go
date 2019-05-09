@@ -6,15 +6,15 @@ import (
 )
 
 const (
-	MSG_INVALID_PARAMETERS string = "Invalid parameters received. Missing parameters: "
-	MSG_NOT_A_NUMBER       string = "'cpf' parameter is not valid. Please, send a valid one."
+	MSG_INVALID_PARAMETERS string = "Parâmetros recebidos inválidos. Parâmetros faltantes: "
+	MSG_NOT_A_NUMBER       string = "Parâmetro 'cpf' inválido. Por favor, envie um válido."
 )
 
 func checkError(err error, print_error bool) bool {
 
 	if err != nil {
 		if print_error {
-			fmt.Println(err)
+			printServerMsg(err.Error(), false)
 		}
 		return true
 	}
@@ -71,6 +71,31 @@ func haveAllParameters(list_names []string, parms map[string]string) (string, bo
 	} else {
 		return "", true
 	}
+}
+
+func PrintServerMsg(msg string, simpleMsg bool) {
+	if !simpleMsg {
+		fmt.Println("---------------------------------------------------------------------------")
+		fmt.Println(msg)
+		fmt.Println("---------------------------------------------------------------------------")
+	} else {
+		fmt.Println(msg)
+	}
+}
+
+func PrintServerMsgWithTitle(title string, msg string) {
+	fmt.Println("===========================================================================")
+	fmt.Println(title)
+	fmt.Println("===========================================================================")
+	fmt.Println()
+	fmt.Println(msg)
+	fmt.Println("---------------------------------------------------------------------------")
+}
+
+func PrintServerMsgOnlyTitle(title string) {
+	fmt.Println("===========================================================================")
+	fmt.Println(title)
+	fmt.Println("===========================================================================")
 }
 
 func validsCodes(c int) bool {
