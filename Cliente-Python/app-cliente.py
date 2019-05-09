@@ -231,7 +231,8 @@ class ClientSimple(ClientSocket):
 class Candidato():
     def _init(self, cpf):
         self.cpf = cpf
-        self.boletim = open('boletins\\' + cpf + '.xml', 'r+', encoding=def_cod).read()
+        #ADICIONAR BARRA DEFINIDA POR SO
+        self.boletim = open('boletins/' + cpf + '.xml', 'r+', encoding=def_cod).read()
         #self.boletimString = open('boletins\\' + cpf + '.xml', 'r+', encoding=def_cod).readlines()
         self.mensageiro = ClientSocket()
         self.mensageiro.connect_pd()
@@ -316,7 +317,8 @@ class ControladorXML():
 
     def lerXSD(self, nome_arq):
         # Abrindo o arquivo xsd
-        xsd_arq = open("schemas\\"+nome_arq+".xsd", "r+", encoding=def_cod)
+        #ADICIONAR BARRA DEFINIDA POR SO
+        xsd_arq = open("schemas/"+nome_arq+".xsd", "r+", encoding=def_cod)
 
         # Transformando o arquivo aberto em arvore de elementos
         xsd_doc = etree.parse(xsd_arq)

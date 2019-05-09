@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-
-	//"bufio"
 	"strconv"
 	"sync"
 )
@@ -32,7 +30,6 @@ func Init() {
 }
 
 func Restart() {
-	observerList = nil
 	for _, clienteSocket := range clinetConnList {
 		clienteSocket.Close()
 	}
@@ -71,12 +68,10 @@ func convertIncomingByteToNumber(byteNumber []byte) (int, error) {
 }
 
 func readIncomingMsg(conn net.Conn, tamBuffer int) ([]byte, error) {
-	// Make a buffer to hold incoming data.
+	
 	buf := make([]byte, tamBuffer)
-	// Read the incoming connection into the buffer.
-	reqLen, err := conn.Read(buf) //conn.Read(buf)
-
-	fmt.Println("\n bytes a ler ", tamBuffer, "\n bytes lidos ", reqLen, "\n msg lida ", string(buf), "\n")
+	reqLen, err := conn.Read(buf)
+	//fmt.Println("\n bytes a ler", tamBuffer, "\n bytes lidos", reqLen, "\n msg lida", string(buf), "\n")
 	if err != nil {
 		fmt.Println("Erro durante a leitura:", err.Error())
 		return nil, err
@@ -89,7 +84,7 @@ func readIncomingMsg(conn net.Conn, tamBuffer int) ([]byte, error) {
 }
 
 func readProtocolType(conn net.Conn) int {
-	fmt.Println("\nesperando receber o tipo de protocolo")
+	//fmt.Println("\nesperando receber o tipo de protocolo")
 	protocoloByte, err := readIncomingMsg(conn, 1)
 	if err != nil {
 		fmt.Println("Erro durante a leitura do tipo de protocolo, assumindo 1 como padrão: ", err.Error())
@@ -97,7 +92,7 @@ func readProtocolType(conn net.Conn) int {
 	}
 
 	protocolo, err := convertIncomingByteToNumber(protocoloByte)
-	fmt.Println("número do protocolo ", protocolo)
+	//fmt.Println("número do protocolo", protocolo)
 	if err != nil || protocolo != 2 {
 		return 1
 	}
@@ -127,8 +122,8 @@ func readCommunication(conn net.Conn) ([]byte, error) {
 		return nil, err
 	}
 
-	fmt.Println("Número de bytes lidos do cliente: ", string(reqLen))
-	fmt.Println("Array de bytes lido convertido para string:\n\n ", string(buf))
+	fmt.Println("Número de bytes lidos do cliente:", string(reqLen))
+	fmt.Println("Array de bytes lido convertido para string:\n\n", string(buf))
 
 	return buf, nil
 }
@@ -138,7 +133,7 @@ func readSize(conn net.Conn, tamBuffer int) (int, error) {
 	if err != nil {
 		return -1, err
 	}
-	fmt.Println("=====tambyte ", string(tamByte))
+	//fmt.Println("=====tambyte", string(tamByte))
 	tam, err := convertIncomingByteToNumber(tamByte)
 	if err != nil {
 		fmt.Println("Erro durante a conversão do tamanho :", err.Error())
@@ -156,23 +151,24 @@ func readCommunicationWithHeader(conn net.Conn) ([]byte, error) {
 	if err != nil || tamCabecalho < 1 {
 		return []byte("-1"), err
 	}
+	fmt.Println("tamanho do cabeçalho lido", tamCabecalho)
 
-	fmt.Printf("tamanho do cabeçalho lido %d\n", tamCabecalho)
-	fmt.Println("começar a ler tamanho do arquivo")
+	fmt.Println("\ncomeçar a ler tamanho do arquivo")
 	tamMsg, err := readSize(conn, tamCabecalho)
-	fmt.Println("tamanho da mensagem ", tamMsg)
+	fmt.Println("tamanho do arquivo", tamMsg)
 	if err != nil || tamMsg < 1 {
 		return []byte("-1"), err
 	}
 
+	fmt.Println("\ncomeçar a ler arquivo de", tamMsg, "bytes")
 	buf, err := readIncomingMsg(conn, tamMsg)
 	if err != nil {
-		fmt.Println("Erro durante a leitura da mensagem:", err.Error())
+		fmt.Println("Erro durante a leitura do arquivo:", err.Error())
 		return nil, err
 	}
 
-	fmt.Println("Número de bytes lidos do cliente: ", tamMsg)
-	fmt.Println("Array de bytes lido convertido para string:\n\n ", string(buf))
+	fmt.Println("\nNúmero de bytes lidos do cliente:", tamMsg)
+	fmt.Println("Array de bytes lido convertido para string:\n\n", string(buf))
 
 	return buf, nil
 }
@@ -191,13 +187,17 @@ func readFromClient(conn net.Conn, protocolo int) ([]byte, error) {
 func handleRequest(conn net.Conn) {
 	myid := len(clinetConnList)
 	clinetConnList = append(clinetConnList, conn)
+	fmt.Println("\n esperando o tipo de protocolo do cliente de número", myid)
 	protocolo := readProtocolType(conn)
-	fmt.Println("\n tipo de protocolo recebido : ", protocolo)
+	fmt.Println("\n tipo de protocolo recebido :", protocolo)
 	for {
+		fmt.Println("\n esperando mensagem do cliente")
 		buf, err := readFromClient(conn, protocolo)
 		if err != nil || string(buf) == "-1" {
+			fmt.Println("\n conexão com o cliente", myid, "encerrada")
 			break
 		}
+		fmt.Println("\n\n executando lógica do servidor... \n")
 		notify(buf, myid, protocolo)
 		wg.Wait()
 	}
@@ -227,9 +227,11 @@ func SendToClientWithoutHeader(msg []byte, clinetId int) {
 	tamMsg = "00000" + tamMsg
 	tamMsg = tamMsg[len(tamMsg)-5:]
 
-	fmt.Println("\ntamanho da mensagem enviado ", tamMsg)
+	fmt.Println("\ntamanho da mensagem a ser enviada", tamMsg)
 	conn.Write([]byte(tamMsg))
+	fmt.Println("enviando mensagem \n", string(msg), "\n")
 	conn.Write(msg)
+	fmt.Println("mensagem enviada...\n")
 }
 
 func SendToClientWithHeader(msg []byte, clinetId int) {
@@ -241,15 +243,21 @@ func SendToClientWithHeader(msg []byte, clinetId int) {
 	tamHeader = "0" + tamHeader
 	tamHeader = tamHeader[len(tamHeader)-2:]
 
-	fmt.Println("\ntamanho do cabeçalho mensagem a ser enviado ", tamHeader)
-	fmt.Println("\ncabeçalho a ser enviado ", tamMsg)
+	
+	fmt.Println("\ntamanho do cabeçalho mensagem a ser enviado", tamHeader)
 	conn.Write([]byte(tamHeader))
+	
+	fmt.Println("cabeçalho a ser enviado", tamMsg)
 	conn.Write([]byte(tamMsg))
+	
+	fmt.Println("enviando mensagem \n\n'", string(msg), "'\n")
 	conn.Write(msg)
+	fmt.Println("mensagem enviada...\n")
 }
 
 func SendToClient(msg []byte, clinetId int, protocolo int) {
 	defer wg.Done()
+	fmt.Println("\n\n enviando mensagem ao cliente de número", clinetId, "pelo protocolo", protocolo)
 	if protocolo == 1 {
 		SendToClientWithoutHeader(msg, clinetId)
 	} else {
