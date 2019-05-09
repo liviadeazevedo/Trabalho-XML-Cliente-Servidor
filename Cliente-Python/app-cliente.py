@@ -48,9 +48,27 @@ class ClientSocket(Thread):
         self.recv_msg = self._receive()
 
     def defineAddrs(self):
-        addrsFile = open("addrs.txt", "w")
-        self.host = input("host:")
-        self.port = int(input("port:"))
+        ans = input(
+            "_______________________________\n"
+            "[ENTER] - Continuar com padrão\n"
+            "1 ------- Definir host e port\n"
+            "2 ------- Definir host\n"
+            "3 ------- Definir port\n"
+            "0 ------- Sair do programa\n"
+            "_______________________________\n")
+        print()
+
+        if ans == '0':
+            exit(0)
+        elif ans == '1':
+            self.host = input("host:")
+            self.port = int(input("port:"))
+        elif ans == '2':
+            self.host = input("host:")
+        elif ans == '3':
+            self.port = int(input("port:"))
+
+        addrsFile = open("addrs.txt", "w+")
         addrsFile.write(self.host + "\n" + str(self.port))
 
     def connect(self, host=None, port=None):
@@ -478,6 +496,7 @@ class ControladorXML():
 def main():
     ''' Função para execução no terminal'''
     c = None
+    ClientSocket().defineAddrs()
 
     while True:
         ans = input(
