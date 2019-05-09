@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"./serverConnection"
 	"./serverLogic"
 )
@@ -18,7 +16,8 @@ func recieveNotification(msg []byte, clinetId int, protocolo int) {
 }
 
 func main() {
-	fmt.Println("se registrando no observer")
+	//fmt.Println("se registrando no observer")
+	serverLogic.printServerMsgOnlyTitle("Se registrando no observer...")
 	serverConnection.RegisterObserver(recieveNotification)
 	serverConnection.OpenListener()
 }
