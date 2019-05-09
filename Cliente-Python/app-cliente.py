@@ -167,6 +167,7 @@ class ClientSocket(Thread):
         while self.recv_msg == b'':
             pass
         msg = self.recv_msg
+        self.recv_msg = b''
         return msg.decode(def_cod)
 
     def pscan(self, port):
@@ -279,6 +280,12 @@ class Candidato():
             print(e)
 
         else:
+            #
+            print(xml_resp.getroot())
+            print(xml_resp.tag)
+            print(xml_resp.find('resposta').find('retorno').text)
+            print(xml_resp.find('resposta/retorno').text)
+            #
             resp = xml_resp.getroot().find('resposta').find('retorno').text
             if resp == '0':
                 print("Candidato não encontrado")
