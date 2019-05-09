@@ -51,14 +51,14 @@ func RequestXMLHandler(xml string) string {
 		valid_req   bool
 	)
 
-	printServerMsg("Verificando validade do XML de requisição...", false)
+	PrintServerMsg("Verificando validade do XML de requisição...", false)
 
 	valid_req, error_sys = validateXML(xml, XSD_REQUEST_PATH)
 	if valid_req {
 		resp = MSG_INVALID_XSD
 	}
 
-	printServerMsg("Extraindo parêmetros da requisição...", false)
+	PrintServerMsg("Extraindo parêmetros da requisição...", false)
 
 	method_name, _ = extractParameterValue(xml, XPATH_METHOD_NAME)
 	/*
@@ -69,7 +69,7 @@ func RequestXMLHandler(xml string) string {
 
 	method_name = strings.ToLower(method_name)
 
-	printServerMsg("Executando método solicitado pelo Cliente...", false)
+	PrintServerMsg("Executando método solicitado pelo Cliente...", false)
 
 	switch method_name {
 	case "submeter":
@@ -78,12 +78,12 @@ func RequestXMLHandler(xml string) string {
 		resp = methodHandler(xml, consultaStatus, 1)
 	default:
 		if !error_sys {
-			printServerMsgOnlyTitle("Falha na execução do método! Nome inválido!")
+			PrintServerMsgOnlyTitle("Falha na execução do método! Nome inválido!")
 			resp = MSG_INVALID_METHOD_NAME
 		}
 	}
 
-	printServerMsg("Construindo XML de resposta...", false)
+	PrintServerMsg("Construindo XML de resposta...", false)
 
 	xml_resp = buildXMLResponse(resp)
 	return xml_resp
