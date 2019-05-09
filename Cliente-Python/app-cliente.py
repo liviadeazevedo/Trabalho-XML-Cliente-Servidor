@@ -38,7 +38,7 @@ class ClientSocket(Thread):
         except Exception as e:
             host = 'localhost'
             port = '4446'
-            print(str(e) + "Creating a file with default host:\'" + host + "\', port:" + port)
+            print(str(e) + "\nCreating a file with default host:\'" + host + "\', port:" + port)
             addrs = open("addrs.txt", "w+")
             addrs.write(host+"\n"+port)
         else:
@@ -49,7 +49,6 @@ class ClientSocket(Thread):
         while self.onThread:
             lock.acquire()
             self.recv_msg = self._receive()
-            print(self.recv_msg)
 
     def defineAddrs(self):
         ans = input(
@@ -149,7 +148,6 @@ class ClientSocket(Thread):
         else:
             print("Sem mensgagem para ler")
 
-        print("msg")
         return msg
 
     def _read_protoheader(self):
@@ -299,8 +297,7 @@ class Candidato():
                 print("Candidato Não Aprovado")
 
     def identificarCandidato(cls):
-        # cpf = input("Digite o CPF:")
-        cpf = "00000000001"
+        cpf = input("Digite o CPF:")
         print()
         try:
             c = Candidato()
@@ -315,14 +312,8 @@ class Candidato():
 class ControladorXML():
     # Caso seja necessário mais alguma funcionalidade que lide com XML/XSD implementar nesta classe
     def toXML(self, nome):
-        # Abrindo o arquivo xml
-        try:
-            str_xml = open(nome, "r+", encoding=def_cod).read()
-        except FileNotFoundError:
-            str_xml = nome
-
         # Transformando o arquivo aberto em arvore de elementos
-        return etree.parse(StringIO(str_xml))
+        return etree.parse(StringIO(nome))
 
     def lerXSD(self, nome_arq):
         # Abrindo o arquivo xsd
@@ -516,8 +507,8 @@ def main():
         "1 - Fazer Login\n"
         "2 - Submeter boletim\n"
         "3 - Consultar status\n"
-        "4 - Fazer Logoff\n"
-        "5 - Visualizar boletim\n"
+        "4 - Visualizar boletim\n"
+        "5 - Fazer Logoff\n"
         "0 - Sair do programa\n"
         "_______________________________\n\n")
         print()
@@ -541,12 +532,6 @@ def main():
             if c is None:
                 print("Comando inválido, faça Login primeiro")
             else:
-                c.mensageiro.close_con()
-                c = None
-        elif ans == '5':
-            if c is None:
-                print("Comando inválido, faça Login primeiro")
-            else:
                 option = input("Digite 1 para visualizar aqui ou 2 para abrir em uma página web\n")
                 if(option == '1'):
                     ctrlXML = ControladorXML()
@@ -556,6 +541,13 @@ def main():
                     ctrlXML.geraHtml(c.boletim)
                 else:
                     print("Opção inválida\n")
+        elif ans == '5':
+            if c is None:
+                print("Comando inválido, faça Login primeiro")
+            else:
+                c.mensageiro.close_con()
+                c = None
+                print("Logoff feito com sucesso")
         elif ans == '0':
             if c is not None:
                 c.mensageiro.close_con()
