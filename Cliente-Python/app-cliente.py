@@ -30,7 +30,8 @@ class ClientSocket(Thread):
         self._hdr_num = 2 # numero de cabeçalhos
         self.pHdr_len = 2 # tamanho do proto cabeçalho
         self.recv_msg = b'' # msg recebida
-        # self.onThread = True # indicador para desligar Thread
+        self.onThread = True # indicador para desligar Thread
+        self._need_read = False
 
         try:
             addrsFileLines = open("addrs.txt", "r").readlines()
@@ -45,7 +46,10 @@ class ClientSocket(Thread):
 
     def run(self):
         # Método que implementa o que a Thread roda
-        self.recv_msg = self._receive()
+        while self.onThread:
+            if self._need_read:
+                self.recv_msg = self._receive()
+                self._need_read = False
 
     def defineAddrs(self):
         ans = input(
@@ -78,6 +82,7 @@ class ClientSocket(Thread):
             self.port = port
         try:
             self.sock.connect((self.host, self.port))
+            self.start()
             return True
 
         except Exception as e:
@@ -163,7 +168,6 @@ class ClientSocket(Thread):
         return self.sock.recv(msg_len)
 
     def read(self):
-        self.start()
         while self.recv_msg == b'':
             pass
         msg = self.recv_msg
