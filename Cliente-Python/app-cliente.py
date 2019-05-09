@@ -184,7 +184,7 @@ class ClientSocket(Thread):
             return False
 
     def close_con(self):
-        # self.onThread = False
+        self.onThread = False
         self.sock.close()
 
 class ClientSimple(ClientSocket):
@@ -523,7 +523,10 @@ def main():
         print()
 
         if ans == '1':
-            c = Candidato().identificarCandidato()
+            if c is None:
+                c = Candidato().identificarCandidato()
+            else:
+                print("Já está logado, para fazer login com outra onta faça primeiro o Logoff")
         elif ans == '2':
             if c is None:
                 print("Comando inválido, faça Login primeiro")
@@ -554,7 +557,8 @@ def main():
                 else:
                     print("Opção inválida\n")
         elif ans == '0':
-            c.mensageiro.close_con()
+            if c is not None:
+                c.mensageiro.close_con()
             break
         else:
             print("Entrada não esperada")
