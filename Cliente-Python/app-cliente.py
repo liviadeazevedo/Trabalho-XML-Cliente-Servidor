@@ -254,7 +254,7 @@ class Candidato():
             print(e)
 
         else:
-            resp = xml_resp.getroot().find('resposta').find('retorno').text
+            resp = xml_resp.getroot().find('retorno').text
             if resp == '0':
                 print("sucesso")
             elif resp == '1':
@@ -280,13 +280,7 @@ class Candidato():
             print(e)
 
         else:
-            #
-            print(xml_resp.getroot())
-            print(xml_resp.tag)
-            print(xml_resp.find('resposta').find('retorno').text)
-            print(xml_resp.find('resposta/retorno').text)
-            #
-            resp = xml_resp.getroot().find('resposta').find('retorno').text
+           resp = xml_resp.getroot().find('retorno').text
             if resp == '0':
                 print("Candidato não encontrado")
             elif resp == '1':
