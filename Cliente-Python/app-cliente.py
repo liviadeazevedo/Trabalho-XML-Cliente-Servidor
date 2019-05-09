@@ -48,7 +48,10 @@ class ClientSocket(Thread):
         # Método que implementa o que a Thread roda
         while self.onThread:
             lock.acquire()
-            self.recv_msg = self._receive()
+            try:
+                self.recv_msg = self._receive()
+            except ConnectionAbortedError:
+                pass
 
     def defineAddrs(self):
         ans = input(
