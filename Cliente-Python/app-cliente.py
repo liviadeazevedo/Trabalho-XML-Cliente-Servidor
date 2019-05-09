@@ -232,6 +232,7 @@ class Candidato():
     def _init(self, cpf):
         self.cpf = cpf
         self.boletim = open('boletins\\' + cpf + '.xml', 'r+', encoding=def_cod).read()
+        #self.boletimString = open('boletins\\' + cpf + '.xml', 'r+', encoding=def_cod).readlines()
         self.mensageiro = ClientSocket()
         self.mensageiro.connect_pd()
 
@@ -345,7 +346,7 @@ class ControladorXML():
 
         return self.to_string(root)
 
-    def imprimir(XMLdoHistorico):  # parametro: string
+    def imprimir(self,XMLdoHistorico):  # parametro: string
 
         # xml_arq = open(XMLdoHistorico, "r",-1,"utf-8")
         xml_arq = etree.parse(StringIO(XMLdoHistorico))
@@ -392,13 +393,13 @@ class ControladorXML():
 
             print("------------------------------------------------------------------------")
 
-    def geraHtml(XMLdoHistorico):  # parametro: string
+    def geraHtml(self, XMLdoHistorico):  # parametro: string
 
         # xml_arq = open(XMLdoHistorico, "r",-1,"utf-8")
         xml_arq = etree.parse(StringIO(XMLdoHistorico))
         xml = xml_arq.getroot()
         texto = []
-        name = "historico"
+        name = "boletimTemp"
         name = name + '.html'
         arq = open(name, 'w', -1, "utf-8")
 
@@ -479,7 +480,7 @@ class ControladorXML():
 
         while (flag == False):
 
-            option = input("\nDeseja abrir o historico gerado? (S / N)\n")
+            option = input("\nDeseja abrir a página gerada? (S / N)\n")
 
             if (option == 's' or option == 'S' or option == 'sim' or option == 'yes' or option == 'y'):
                 os.startfile(os.path.abspath(name))
@@ -505,6 +506,7 @@ def main():
         "2 - Submeter boletim\n"
         "3 - Consultar status\n"
         "4 - Fazer Logoff\n"
+        "5 - Visualizar boletim\n"
         "0 - Sair do programa\n"
         "_______________________________\n\n")
         print()
@@ -527,6 +529,19 @@ def main():
             else:
                 c.mensageiro.close_con()
                 c = None
+        elif ans == '5':
+            if c is None:
+                print("Comando inválido, faça Login primeiro")
+            else:
+                option = input("Digite 1 para visualizar aqui ou 2 para abrir em uma página web\n")
+                if(option == '1'):
+                    ctrlXML = ControladorXML()
+                    ctrlXML.imprimir(c.boletim)
+                elif(option == '2'):
+                    ctrlXML = ControladorXML()
+                    ctrlXML.geraHtml(c.boletim)
+                else:
+                    print("Opção inválida\n")
         elif ans == '0':
             c.mensageiro.close_con()
             break
