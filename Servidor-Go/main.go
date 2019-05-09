@@ -17,7 +17,7 @@ func recieveNotification(msg []byte, clinetId int, protocolo int) {
 
 func main() {
 	//fmt.Println("se registrando no observer")
-	serverLogic.printServerMsgOnlyTitle("Se registrando no observer...")
+	serverLogic.PrintServerMsgOnlyTitle("Se registrando no observer...")
 	serverConnection.RegisterObserver(recieveNotification)
 	serverConnection.OpenListener()
 }

@@ -14,7 +14,7 @@ func checkError(err error, print_error bool) bool {
 
 	if err != nil {
 		if print_error {
-			printServerMsg(err.Error(), false)
+			PrintServerMsg(err.Error(), false)
 		}
 		return true
 	}
