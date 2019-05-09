@@ -284,7 +284,7 @@ class Candidato():
             print(e)
 
         else:
-           resp = xml_resp.getroot().find('retorno').text
+            resp = xml_resp.getroot().find('retorno').text
             if resp == '0':
                 print("Candidato não encontrado")
             elif resp == '1':
