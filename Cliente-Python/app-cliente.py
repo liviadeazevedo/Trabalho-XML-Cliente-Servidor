@@ -47,9 +47,9 @@ class ClientSocket(Thread):
     def run(self):
         # Método que implementa o que a Thread roda
         while self.onThread:
-            if self._need_read:
-                self.recv_msg = self._receive()
-                self._need_read = False
+            lock.acquire()
+            self.recv_msg = self._receive()
+            print(self.recv_msg)
 
     def defineAddrs(self):
         ans = input(
@@ -101,10 +101,8 @@ class ClientSocket(Thread):
             if ans == '0':
                 exit(0)
 
-            return False
         else:
             self.sock.send(str(self._hdr_num).encode(def_cod))
-            return True
 
     def send(self, msg):
         ''' Método para envio de mensagens'''
@@ -123,6 +121,7 @@ class ClientSocket(Thread):
             try:
                 sent = self.sock.send(data[totalsent:])
             except Exception as e:
+                print(e)
                 exit(1)
 
             else:
@@ -150,6 +149,7 @@ class ClientSocket(Thread):
         else:
             print("Sem mensgagem para ler")
 
+        print("msg")
         return msg
 
     def _read_protoheader(self):
@@ -168,6 +168,7 @@ class ClientSocket(Thread):
         return self.sock.recv(msg_len)
 
     def read(self):
+        lock.release()
         while self.recv_msg == b'':
             pass
         msg = self.recv_msg
@@ -247,6 +248,7 @@ class Candidato():
         ctrlXML.lerXSD("resposta")
 
         msg = ctrlXML.criarRequisicao("submeter", {'Boletim': self.boletim})
+
         self.mensageiro.send(msg)
         resp = self.mensageiro.read()
         xml_resp = ctrlXML.toXML(resp)
@@ -284,7 +286,7 @@ class Candidato():
             print(e)
 
         else:
-           resp = xml_resp.getroot().find('retorno').text
+            resp = xml_resp.getroot().find('retorno').text
             if resp == '0':
                 print("Candidato não encontrado")
             elif resp == '1':
@@ -297,7 +299,8 @@ class Candidato():
                 print("Candidato Não Aprovado")
 
     def identificarCandidato(cls):
-        cpf = input("Digite o CPF:")
+        # cpf = input("Digite o CPF:")
+        cpf = "00000000001"
         print()
         try:
             c = Candidato()
@@ -306,6 +309,7 @@ class Candidato():
             print("CPF informado é inválido")
             return None
         else:
+            print("Login efetuado com sucesso")
             return c
 
 class ControladorXML():
@@ -556,48 +560,10 @@ def main():
             print("Entrada não esperada")
 
 def teste():
-    '''Operações de teste'''
-    ctrl = ControladorXML()
-
-    # ctrlXML = ControladorXML()
-    #
-    # xml = ctrlXML.criarRequisicao("consultaStatus", {'cpf': '0001'})
-    #
-    # print(etree.tostring(xml))
-    # pass
-
-# Função comentada para consulta de operações necessárias
-'''def run():
-
-    global received_msg
-
-    waiting_HE = False
-
-    ctrl_XML = ControladorXML()
-
-    xsd = ctrl_XML.lerXSD("he_schema.xsd")
-
-    c = MySocket()
-
-    c.connect(host, port)
-
-    while waiting_HE:
-
-        with lock:
-            if received_msg != '':
-
-                if TESTE:
-                    print("Olha: " + received_msg)
-
-                if validate(received_msg, xsd):
-                    imprimir(received_msg)
-                else:
-
-                    print("Algo de errado não está certo, XML não corresponde ao Schema")
-
-
-                received_msg = ''
-                waiting_HE = False
-'''
+    def criarRequisicao():
+        root = etree.Element("resposta")
+        retorno = etree.SubElement(root, "retorno")
+        retorno.text = '1'
+        return ctrl.to_string(root)
 
 main()
