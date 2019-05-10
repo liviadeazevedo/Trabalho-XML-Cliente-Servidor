@@ -1,14 +1,13 @@
 package serverConnection
 
 import (
-	"Trabalho-XML-Cliente-Servidor/Servidor-Go/serverLog"
 	"fmt"
 	"net"
 	"os"
 	"strconv"
 	"sync"
 
-	"../serverLog"
+	"Trabalho-XML-Cliente-Servidor-integration-branch/Servidor-Go/serverLog"
 )
 
 const (
@@ -16,6 +15,7 @@ const (
 	CONN_PORT            = "4446"
 	CONN_TYPE            = "tcp4"
 	MAX_TAM_MSG_TO_PRINT = 400
+	MAX_PKG_SIZE		 = 1400
 )
 
 var (
@@ -83,6 +83,41 @@ func truncateMsgToPrint(msg []byte) string {
 	return msgToPrint
 }
 
+func readBufferLimitedIncomingMsg(conn net.Conn, tamBuffer int) ([]byte, error) {
+	auxBuff := make([]byte, 0)
+	truncated := false
+	if tamBuffer > MAX_PKG_SIZE{
+		truncated = true
+		count := 0
+		for ;true;{
+			buf, err := readIncomingMsg(conn, MAX_PKG_SIZE)
+			if err != nil || string(buf) == "-1"{
+				return buf, err
+			}
+			auxBuff = append(auxBuff, buf...)//caso não funcione, usar spread - buf...
+			count += 1
+			valorLido := count*MAX_PKG_SIZE
+			restaLer := tamBuffer - valorLido
+			if restaLer < MAX_PKG_SIZE {
+				tamBuffer = restaLer
+				break
+			}
+		}
+	}
+
+
+	buf, err := readIncomingMsg(conn, tamBuffer)
+	if err != nil || string(buf) == "-1"{
+		return buf, err
+	}
+
+	if truncated{
+		return append(auxBuff, buf...), nil
+	}
+
+	return buf, nil
+}
+
 func readIncomingMsg(conn net.Conn, tamBuffer int) ([]byte, error) {
 
 	buf := make([]byte, tamBuffer)
@@ -138,7 +173,7 @@ func readCommunication(conn net.Conn) ([]byte, error) {
 	serverLog.PrintServerMsg("Tamanho lido: "+strconv.Itoa(tamMsg), false)
 	//fmt.Println("começar a ler mensagem")
 	serverLog.PrintServerMsgOnlyTitle("Começar a ler mensagem...")
-	buf, err := readIncomingMsg(conn, tamMsg)
+	buf, err := readBufferLimitedIncomingMsg(conn, tamMsg)
 	if err != nil {
 		//fmt.Println("Erro durante a leitura da mensagem:", err.Error())
 		serverLog.PrintServerMsg("Erro durante a leitura da mensagem: "+err.Error(), false)
@@ -188,14 +223,14 @@ func readCommunicationWithHeader(conn net.Conn) ([]byte, error) {
 	}
 
 	fmt.Println("\ncomeçar a ler arquivo de", tamMsg, "bytes")
-	buf, err := readIncomingMsg(conn, tamMsg)
+	buf, err := readBufferLimitedIncomingMsg(conn, tamMsg)
 	if err != nil {
 		fmt.Println("Erro durante a leitura do arquivo:", err.Error())
 		return nil, err
 	}
 
 	fmt.Println("\nNúmero de bytes lidos do cliente:", tamMsg)
-	fmt.Println("Array de bytes lido convertido para string:\n\n", truncateMsgToPrint(buf))
+	fmt.Println("Array de bytes lido convertido para string:\n\n", string(buf))
 
 	return buf, nil
 }
