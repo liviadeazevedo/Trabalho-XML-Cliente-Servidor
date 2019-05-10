@@ -1,8 +1,9 @@
 package serverLogic
 
 import (
-	"fmt"
 	"strings"
+
+	"../serverLog"
 )
 
 const (
@@ -14,7 +15,7 @@ func checkError(err error, print_error bool) bool {
 
 	if err != nil {
 		if print_error {
-			PrintServerMsg(err.Error(), false)
+			serverLog.PrintServerMsg(err.Error(), false)
 		}
 		return true
 	}
@@ -71,31 +72,6 @@ func haveAllParameters(list_names []string, parms map[string]string) (string, bo
 	} else {
 		return "", true
 	}
-}
-
-func PrintServerMsg(msg string, simpleMsg bool) {
-	if !simpleMsg {
-		fmt.Println("---------------------------------------------------------------------------")
-		fmt.Println(msg)
-		fmt.Println("---------------------------------------------------------------------------")
-	} else {
-		fmt.Println(msg)
-	}
-}
-
-func PrintServerMsgWithTitle(title string, msg string) {
-	fmt.Println("===========================================================================")
-	fmt.Println(title)
-	fmt.Println("===========================================================================")
-	fmt.Println()
-	fmt.Println(msg)
-	fmt.Println("---------------------------------------------------------------------------")
-}
-
-func PrintServerMsgOnlyTitle(title string) {
-	fmt.Println("===========================================================================")
-	fmt.Println(title)
-	fmt.Println("===========================================================================")
 }
 
 func validsCodes(c int) bool {

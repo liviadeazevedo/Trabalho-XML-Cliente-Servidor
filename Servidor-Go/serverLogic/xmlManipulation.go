@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"../serverLog"
+
 	//Manipulação de xml
 	"github.com/lestrrat-go/libxml2"
 	"github.com/lestrrat-go/libxml2/xpath"
@@ -51,9 +53,9 @@ func checkXML(xml string) bool {
 	poorly_formatted := checkError(err, true)
 
 	if poorly_formatted {
-		PrintServerMsg("\n"+XML_FORMAT_FAILED_MSG, false)
+		serverLog.PrintServerMsg("\n"+XML_FORMAT_FAILED_MSG, false)
 	} else {
-		PrintServerMsg(XML_FORMAT_SUCCEDED_MSG, false)
+		serverLog.PrintServerMsg(XML_FORMAT_SUCCEDED_MSG, false)
 	}
 
 	return !poorly_formatted
@@ -148,12 +150,12 @@ func validateXML(xml, xsd_path string) (bool, bool) {
 		for _, e := range err.(xsd.SchemaValidationError).Errors() {
 			error_concat = error_concat + "Error: " + e.Error() + "\n"
 		}
-		PrintServerMsgWithTitle("Erros de Validação. XSD: "+xsd_path, error_concat)
-		PrintServerMsg(XML_VALIDATION_FAILED_MSG, false)
+		serverLog.PrintServerMsgWithTitle("Erros de Validação. XSD: "+xsd_path, error_concat)
+		serverLog.PrintServerMsg(XML_VALIDATION_FAILED_MSG, false)
 		return false, false
 	}
 
-	PrintServerMsg(XML_VALIDATION_SUCCEDED_MSG, false)
+	serverLog.PrintServerMsg(XML_VALIDATION_SUCCEDED_MSG, false)
 
 	return true, false
 }
