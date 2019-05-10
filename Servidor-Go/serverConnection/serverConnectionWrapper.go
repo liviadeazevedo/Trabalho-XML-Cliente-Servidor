@@ -230,7 +230,7 @@ func readCommunicationWithHeader(conn net.Conn) ([]byte, error) {
 	}
 
 	fmt.Println("\nNúmero de bytes lidos do cliente:", tamMsg)
-	fmt.Println("Array de bytes lido convertido para string:\n\n", string(buf))
+	fmt.Println("Array de bytes lido convertido para string:\n\n", truncateMsgToPrint(buf))
 
 	return buf, nil
 }
