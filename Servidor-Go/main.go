@@ -129,10 +129,14 @@ func recieveNotification(msg []byte, clinetId int, protocolo int) {
 }
 
 func main() {
-	//fmt.Println("se registrando no observer")
-	//ip, port, e := defineServerIPAndPort() --> Use esse método para a optenção do ip e porta.
+	ip, port, e := defineServerIPAndPort()
+	if e != nil {
+		serverLog.PrintServerMsg("Falha ao definir o ip e a porta por input. O padrão será utilizado")
+		ip, port = "", ""
+	}
 	serverLog.PrintWaitingMsg("Se registrando no observer...")
 	serverConnection.RegisterObserver(recieveNotification)
 	serverLog.PrintServerMsg("Registrado no observer!", false)
-	serverConnection.OpenListener()
+	serverLog.PrintWaitingMsg("Abrindo servidor...")
+	serverConnection.OpenListener(ip, port)
 }

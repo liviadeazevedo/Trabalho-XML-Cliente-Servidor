@@ -40,10 +40,17 @@ func Restart() {
 	Init()
 }
 
-func OpenListener() {
+func OpenListener(ip string, port string) {
 	Init()
 	// Listen for incoming connections.
-	l, err := net.Listen(CONN_TYPE, CONN_HOST+":"+CONN_PORT)
+	if ip == "" {
+		ip = CONN_HOST
+	}
+	if port == ""{
+		port = CONN_PORT
+	}
+
+	l, err := net.Listen(CONN_TYPE, ip+":"+port)
 	if err != nil {
 		//fmt.Println("Erro listening:", err.Error())
 		serverLog.PrintErrorMsg("Erro listening: " + err.Error())
@@ -93,7 +100,7 @@ func readBufferLimitedIncomingMsg(conn net.Conn, tamBuffer int) ([]byte, error) 
 			if err != nil || string(buf) == "-1" {
 				return buf, err
 			}
-			auxBuff = append(auxBuff, buf...) //caso não funcione, usar spread - buf...
+			auxBuff = append(auxBuff, buf...)
 			count += 1
 			valorLido := count * MAX_PKG_SIZE
 			restaLer := tamBuffer - valorLido
