@@ -1,13 +1,12 @@
 package serverConnection
 
 import (
-	"fmt"
 	"net"
 	"os"
 	"strconv"
 	"sync"
 
-	"Trabalho-XML-Cliente-Servidor-integration-branch/Servidor-Go/serverLog"
+	"Trabalho-XML-Cliente-Servidor/Servidor-Go/serverLog"
 )
 
 const (
@@ -15,7 +14,7 @@ const (
 	CONN_PORT            = "4446"
 	CONN_TYPE            = "tcp4"
 	MAX_TAM_MSG_TO_PRINT = 400
-	MAX_PKG_SIZE		 = 1400
+	MAX_PKG_SIZE         = 1400
 )
 
 var (
@@ -47,21 +46,21 @@ func OpenListener() {
 	l, err := net.Listen(CONN_TYPE, CONN_HOST+":"+CONN_PORT)
 	if err != nil {
 		//fmt.Println("Erro listening:", err.Error())
-		serverLog.PrintServerMsg("Erro listening: "+err.Error(), false)
+		serverLog.PrintErrorMsg("Erro listening: " + err.Error())
 		os.Exit(1)
 	}
 	// Close the listener when the application closes.
 	defer l.Close()
 
 	//fmt.Println("Listening em " + CONN_HOST + ":" + CONN_PORT)
-	serverLog.PrintServerMsg("Listening em "+CONN_HOST+":"+CONN_PORT, true)
+	serverLog.PrintWaitingMsg("Listening em " + CONN_HOST + ":" + CONN_PORT + "...")
 
 	for {
 		// Listen for an incoming connection.
 		conn, err := l.Accept()
 		if err != nil {
 			//fmt.Println("Error accepting: ", err.Error())
-			serverLog.PrintServerMsg("Error accepting: "+err.Error(), false)
+			serverLog.PrintErrorMsg("Error accepting: " + err.Error())
 			os.Exit(1)
 		}
 		//fmt.Println("Conexão do cliente recebida.")
@@ -86,17 +85,17 @@ func truncateMsgToPrint(msg []byte) string {
 func readBufferLimitedIncomingMsg(conn net.Conn, tamBuffer int) ([]byte, error) {
 	auxBuff := make([]byte, 0)
 	truncated := false
-	if tamBuffer > MAX_PKG_SIZE{
+	if tamBuffer > MAX_PKG_SIZE {
 		truncated = true
 		count := 0
-		for ;true;{
+		for true {
 			buf, err := readIncomingMsg(conn, MAX_PKG_SIZE)
-			if err != nil || string(buf) == "-1"{
+			if err != nil || string(buf) == "-1" {
 				return buf, err
 			}
-			auxBuff = append(auxBuff, buf...)//caso não funcione, usar spread - buf...
+			auxBuff = append(auxBuff, buf...) //caso não funcione, usar spread - buf...
 			count += 1
-			valorLido := count*MAX_PKG_SIZE
+			valorLido := count * MAX_PKG_SIZE
 			restaLer := tamBuffer - valorLido
 			if restaLer < MAX_PKG_SIZE {
 				tamBuffer = restaLer
@@ -105,13 +104,12 @@ func readBufferLimitedIncomingMsg(conn net.Conn, tamBuffer int) ([]byte, error) 
 		}
 	}
 
-
 	buf, err := readIncomingMsg(conn, tamBuffer)
-	if err != nil || string(buf) == "-1"{
+	if err != nil || string(buf) == "-1" {
 		return buf, err
 	}
 
-	if truncated{
+	if truncated {
 		return append(auxBuff, buf...), nil
 	}
 
@@ -125,7 +123,7 @@ func readIncomingMsg(conn net.Conn, tamBuffer int) ([]byte, error) {
 	//fmt.Println("\n bytes a ler", tamBuffer, "\n bytes lidos", reqLen, "\n msg lida", string(buf), "\n")
 	if err != nil {
 		//fmt.Println("Erro durante a leitura:", err.Error())
-		serverLog.PrintServerMsg("Erro durante a leitura: "+err.Error(), true)
+		serverLog.PrintErrorMsg("Erro durante a leitura: " + err.Error())
 		return nil, err
 	}
 	if reqLen < 0 {
@@ -140,7 +138,7 @@ func readProtocolType(conn net.Conn) int {
 	protocoloByte, err := readIncomingMsg(conn, 1)
 	if err != nil {
 		//fmt.Println("Erro durante a leitura do tipo de protocolo, assumindo 1 como padrão: ", err.Error())
-		serverLog.PrintServerMsg("Erro durante a leitura do tipo de protocolo, assumindo 1 como padrão: "+err.Error(), false)
+		serverLog.PrintErrorMsg("Erro durante a leitura do tipo de protocolo, assumindo 1 como padrão: " + err.Error())
 		return 1
 	}
 
@@ -154,7 +152,7 @@ func readProtocolType(conn net.Conn) int {
 
 func readCommunication(conn net.Conn) ([]byte, error) {
 	//fmt.Println("\nEsperando ler tamanho")
-	serverLog.PrintServerMsgOnlyTitle("Esperando ler tamanho...")
+	serverLog.PrintWaitingMsg("Esperando ler tamanho...")
 	reqLen, err := readIncomingMsg(conn, 5)
 	if err != nil {
 		return nil, err
@@ -162,7 +160,7 @@ func readCommunication(conn net.Conn) ([]byte, error) {
 	tamMsg, err := convertIncomingByteToNumber(reqLen)
 	if err != nil {
 		//fmt.Println("Erro durante a conversão do tamanho:", err.Error())
-		serverLog.PrintServerMsg("Erro durante a conversão do tamanho: "+err.Error(), false)
+		serverLog.PrintErrorMsg("Erro durante a conversão do tamanho: " + err.Error())
 		return nil, err
 	}
 	if tamMsg < 0 {
@@ -172,11 +170,11 @@ func readCommunication(conn net.Conn) ([]byte, error) {
 	//fmt.Printf("tamanho lido %d\n", tamMsg)
 	serverLog.PrintServerMsg("Tamanho lido: "+strconv.Itoa(tamMsg), false)
 	//fmt.Println("começar a ler mensagem")
-	serverLog.PrintServerMsgOnlyTitle("Começar a ler mensagem...")
+	serverLog.PrintWaitingMsg("Começar a ler mensagem...")
 	buf, err := readBufferLimitedIncomingMsg(conn, tamMsg)
 	if err != nil {
 		//fmt.Println("Erro durante a leitura da mensagem:", err.Error())
-		serverLog.PrintServerMsg("Erro durante a leitura da mensagem: "+err.Error(), false)
+		serverLog.PrintErrorMsg("Erro durante a leitura da mensagem: " + err.Error())
 		return nil, err
 	}
 
@@ -196,7 +194,7 @@ func readSize(conn net.Conn, tamBuffer int) (int, error) {
 	tam, err := convertIncomingByteToNumber(tamByte)
 	if err != nil {
 		//fmt.Println("Erro durante a conversão do tamanho :", err.Error())
-		serverLog.PrintServerMsg("Erro durante a conversão do tamanho: "+err.Error(), false)
+		serverLog.PrintErrorMsg("Erro durante a conversão do tamanho: " + err.Error())
 		return -1, err
 	}
 	if tam < 0 {
@@ -206,31 +204,39 @@ func readSize(conn net.Conn, tamBuffer int) (int, error) {
 }
 
 func readCommunicationWithHeader(conn net.Conn) ([]byte, error) {
-	serverLog.PrintServerMsg("\nEsperando ler tamanho do cabeçalho...", false)
+	serverLog.PrintWaitingMsg("Esperando ler tamanho do cabeçalho...")
 	//fmt.Println("\nesperando ler tamanho do cabeçalho")
 	tamCabecalho, err := readSize(conn, 2)
 	if err != nil || tamCabecalho < 1 {
 		return []byte("-1"), err
 	}
 	//PAREI AQUI A FORMATAÇÃO DA MENSAGEM DO SERVIDOR!
-	fmt.Println("tamanho do cabeçalho lido", tamCabecalho)
+	//fmt.Println("tamanho do cabeçalho lido", tamCabecalho)
 
-	fmt.Println("\ncomeçar a ler tamanho do arquivo")
+	//fmt.Println("\ncomeçar a ler tamanho do arquivo")
+
+	serverLog.PrintServerMsg("Tamanho do cabeçalho lido: "+strconv.Itoa(tamCabecalho), false)
+	serverLog.PrintWaitingMsg("Começar a ler tamanho do arquivo...")
+
 	tamMsg, err := readSize(conn, tamCabecalho)
-	fmt.Println("tamanho do arquivo", tamMsg)
+	//fmt.Println("tamanho do arquivo", tamMsg)
+	serverLog.PrintServerMsg("Tamanho do arquivo: "+strconv.Itoa(tamMsg), false)
 	if err != nil || tamMsg < 1 {
 		return []byte("-1"), err
 	}
 
-	fmt.Println("\ncomeçar a ler arquivo de", tamMsg, "bytes")
+	//fmt.Println("\ncomeçar a ler arquivo de", tamMsg, "bytes")
+	serverLog.PrintWaitingMsg("Começar a ler arquivo de " + strconv.Itoa(tamMsg) + " bytes...")
 	buf, err := readBufferLimitedIncomingMsg(conn, tamMsg)
 	if err != nil {
-		fmt.Println("Erro durante a leitura do arquivo:", err.Error())
+		//fmt.Println("Erro durante a leitura do arquivo:", err.Error())
+		serverLog.PrintErrorMsg(err.Error())
 		return nil, err
 	}
 
-	fmt.Println("\nNúmero de bytes lidos do cliente:", tamMsg)
-	fmt.Println("Array de bytes lido convertido para string:\n\n", truncateMsgToPrint(buf))
+	//fmt.Println("\nNúmero de bytes lidos do cliente:", tamMsg)
+	//fmt.Println("Array de bytes lido convertido para string:\n\n", truncateMsgToPrint(buf))
+	serverLog.PrintServerMsg("Número de bytes lidos do cliente: "+strconv.Itoa(tamMsg)+"\n\nArray de bytes lido convertido para string:\n\n"+truncateMsgToPrint(buf), false)
 
 	return buf, nil
 }
@@ -249,17 +255,24 @@ func readFromClient(conn net.Conn, protocolo int) ([]byte, error) {
 func handleRequest(conn net.Conn) {
 	myid := len(clinetConnList)
 	clinetConnList = append(clinetConnList, conn)
-	fmt.Println("\n Esperando o tipo de protocolo do cliente de número", myid)
+	//fmt.Println("\n Esperando o tipo de protocolo do cliente de número", myid)
+	serverLog.PrintWaitingMsg("Esperando o tipo de protocolo do cliente de número " + strconv.Itoa(myid) + "...")
+
 	protocolo := readProtocolType(conn)
-	fmt.Println("\n Tipo de protocolo recebido :", protocolo)
+	//fmt.Println("\n Tipo de protocolo recebido :", protocolo)
+	serverLog.PrintServerMsg("Tipo de protocolo recebido: "+strconv.Itoa(protocolo), false)
+
 	for {
-		fmt.Println("\n Esperando mensagem do cliente")
+		//fmt.Println("\n Esperando mensagem do cliente")
+		serverLog.PrintWaitingMsg("Esperando mensagem do cliente...")
 		buf, err := readFromClient(conn, protocolo)
 		if err != nil || string(buf) == "-1" {
-			fmt.Println("\n Conexão com o cliente", myid, "encerrada")
+			//fmt.Println("\n Conexão com o cliente", myid, "encerrada")
+			serverLog.PrintErrorMsg("Conexão com o cliente " + strconv.Itoa(myid) + "encerrada")
 			break
 		}
-		fmt.Println("\n\n Executando lógica do servidor... \n")
+		//fmt.Println("\n\n Executando lógica do servidor... \n")
+		serverLog.PrintWaitingMsg("Executando lógica do servidor...")
 		notify(buf, myid, protocolo)
 		wg.Wait()
 	}
@@ -289,11 +302,14 @@ func SendToClientWithoutHeader(msg []byte, clinetId int) {
 	tamMsg = "00000" + tamMsg
 	tamMsg = tamMsg[len(tamMsg)-5:]
 
-	fmt.Println("\nTamanho da mensagem a ser enviada", tamMsg)
+	//fmt.Println("\nTamanho da mensagem a ser enviada", tamMsg)
+	serverLog.PrintServerMsg("Tamanho da mensagem a ser enviada "+tamMsg, false)
 	conn.Write([]byte(tamMsg))
-	fmt.Println("Enviando mensagem \n", truncateMsgToPrint(msg), "\n")
+	//fmt.Println("Enviando mensagem \n", truncateMsgToPrint(msg), "\n")
+	serverLog.PrintWaitingMsg("Enviando mensagem:\n\n" + truncateMsgToPrint(msg) + "\n\n...")
 	conn.Write(msg)
-	fmt.Println("Mensagem enviada...\n")
+	//fmt.Println("Mensagem enviada...\n")
+	serverLog.PrintServerMsg("Mensagem enviada!", false)
 }
 
 func SendToClientWithHeader(msg []byte, clinetId int) {
@@ -305,19 +321,25 @@ func SendToClientWithHeader(msg []byte, clinetId int) {
 	tamHeader = "0" + tamHeader
 	tamHeader = tamHeader[len(tamHeader)-2:]
 
-	fmt.Println("\nTamanho do cabeçalho mensagem a ser enviado", tamHeader)
+	//fmt.Println("\nTamanho do cabeçalho mensagem a ser enviado", tamHeader)
+	serverLog.PrintServerMsg("Tamanho do cabeçalho mensagem a ser enviado: "+tamHeader, false)
+
 	conn.Write([]byte(tamHeader))
 
-	fmt.Println("Cabeçalho a ser enviado", tamMsg)
+	//fmt.Println("Cabeçalho a ser enviado", tamMsg)
+	serverLog.PrintServerMsg("Cabeçalho a ser enviado"+tamMsg, false)
 	conn.Write([]byte(tamMsg))
-	fmt.Println("Enviando mensagem \n\n'", truncateMsgToPrint(msg), "'\n")
+	//fmt.Println("Enviando mensagem \n\n'", truncateMsgToPrint(msg), "'\n")
+	serverLog.PrintWaitingMsg("Enviando mensagem: \n\n" + truncateMsgToPrint(msg) + "\n\n...")
 	conn.Write(msg)
-	fmt.Println("Mensagem enviada...\n")
+	//fmt.Println("Mensagem enviada...\n")
+	serverLog.PrintServerMsg("Mensagem enviada!", false)
 }
 
 func SendToClient(msg []byte, clinetId int, protocolo int) {
 	defer wg.Done()
-	fmt.Println("\n\n Enviando mensagem ao cliente de número", clinetId, "pelo protocolo", protocolo)
+	//fmt.Println("\n\n Enviando mensagem ao cliente de número", clinetId, "pelo protocolo", protocolo)
+	serverLog.PrintWaitingMsg("Enviando mensagem ao cliente de número " + strconv.Itoa(clinetId) + " pelo protocolo " + strconv.Itoa(protocolo) + "...")
 	if protocolo == 1 {
 		SendToClientWithoutHeader(msg, clinetId)
 	} else {

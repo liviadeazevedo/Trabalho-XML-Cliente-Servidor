@@ -3,7 +3,7 @@ package serverLogic
 import (
 	"strings"
 
-	"../serverLog"
+	"Trabalho-XML-Cliente-Servidor/Servidor-Go/serverLog"
 )
 
 const (
@@ -15,7 +15,7 @@ func checkError(err error, print_error bool) bool {
 
 	if err != nil {
 		if print_error {
-			serverLog.PrintServerMsg(err.Error(), false)
+			serverLog.PrintErrorMsg(err.Error())
 		}
 		return true
 	}

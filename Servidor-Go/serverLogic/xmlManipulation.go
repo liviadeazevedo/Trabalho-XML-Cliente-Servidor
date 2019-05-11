@@ -3,10 +3,11 @@ package serverLogic
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
-	"../serverLog"
+	"Trabalho-XML-Cliente-Servidor/Servidor-Go/serverLog"
 
 	//Manipulação de xml
 	"github.com/lestrrat-go/libxml2"
@@ -53,7 +54,7 @@ func checkXML(xml string) bool {
 	poorly_formatted := checkError(err, true)
 
 	if poorly_formatted {
-		serverLog.PrintServerMsg("\n"+XML_FORMAT_FAILED_MSG, false)
+		serverLog.PrintErrorMsg(XML_FORMAT_FAILED_MSG)
 	} else {
 		serverLog.PrintServerMsg(XML_FORMAT_SUCCEDED_MSG, false)
 	}
@@ -132,7 +133,10 @@ func validateXML(xml, xsd_path string) (bool, bool) {
 
 	var error_concat string
 
-	schema, err := xsd.ParseFromFile(xsd_path)
+	//Permitir diretório cross-plataform
+	xsd_path_os := filepath.FromSlash(xsd_path)
+
+	schema, err := xsd.ParseFromFile(xsd_path_os)
 	error_sys := checkError(err, true)
 	if error_sys {
 		return false, true
@@ -151,7 +155,7 @@ func validateXML(xml, xsd_path string) (bool, bool) {
 			error_concat = error_concat + "Error: " + e.Error() + "\n"
 		}
 		serverLog.PrintServerMsgWithTitle("Erros de Validação. XSD: "+xsd_path, error_concat)
-		serverLog.PrintServerMsg(XML_VALIDATION_FAILED_MSG, false)
+		serverLog.PrintErrorMsg(XML_VALIDATION_FAILED_MSG)
 		return false, false
 	}
 
