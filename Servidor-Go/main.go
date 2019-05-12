@@ -5,6 +5,7 @@ import (
 	"Trabalho-XML-Cliente-Servidor/Servidor-Go/serverLog"
 	"Trabalho-XML-Cliente-Servidor/Servidor-Go/serverLogic"
 	"bufio"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -167,6 +168,9 @@ func recieveNotification(msg []byte, clinetId int, protocolo int) {
 
 func main() {
 	ip, port, e := defineServerIPAndPort()
+
+	fmt.Println(ip, ":", port)
+
 	if e != nil {
 		serverLog.PrintErrorMsg("Falha ao definir o ip e a porta por input. O padrão será utilizado")
 		ip, port = "", ""

@@ -46,7 +46,7 @@ func OpenListener(ip string, port string) {
 	if ip == "" {
 		ip = CONN_HOST
 	}
-	if port == ""{
+	if port == "" {
 		port = CONN_PORT
 	}
 
@@ -60,7 +60,7 @@ func OpenListener(ip string, port string) {
 	defer l.Close()
 
 	//fmt.Println("Listening em " + CONN_HOST + ":" + CONN_PORT)
-	serverLog.PrintWaitingMsg("Listening em " + CONN_HOST + ":" + CONN_PORT + "...")
+	serverLog.PrintWaitingMsg("Listening em " + ip + ":" + port + "...")
 
 	for {
 		// Listen for an incoming connection.
