@@ -1,0 +1,69 @@
+body{
+	background-color: #F0EDEC;
+	color: #5C5B5B;
+}
+header{
+	text-align: center;
+	position: relative;
+}
+footer{
+	text-align: center;
+	font-size: 12px;
+}
+table{
+	border: 1px solid #5C5B5B;
+	padding: 10px 10px;
+  	border-collapse: collapse;
+  	text-align: center;
+}
+tr{
+	border: 1px solid #5C5B5B;
+	padding: 10px 10px;
+  	border-collapse: collapse;
+}
+td{
+	border-right: 0px;
+	border-top: 1px solid #5C5B5B;
+	border-bottom: 1px solid #5C5B5B;
+	border-left: 0px;
+	padding: 10px 10px;
+  	border-collapse: collapse;
+}
+th{
+	border: 1px solid #5C5B5B;
+	padding: 10px 10px;
+  	border-collapse: collapse;
+  	background-color: #C0C0C0;
+}
+
+.imagem{
+	top: 5px;
+	left: 20px;
+	width: 120px;
+	height: 120px;
+	text-align: left;
+	position: left;
+	display: inline-block;
+	padding: 10px 15px;
+	position: absolute;
+}
+
+.imagemPerfil{
+	width: 120px;
+	height: 140px;
+	text-align: left;
+	position: left;
+	display: inline-block;
+	padding: 10px 15px;
+}
+
+.imagemLegenda{
+	top: 50%;
+	left:75%;
+	position: fixed;
+	width: 320px;
+	height: 250px;
+	display: inline-block;
+	padding: 10px 15px;
+	opacity: 0.8;
+}

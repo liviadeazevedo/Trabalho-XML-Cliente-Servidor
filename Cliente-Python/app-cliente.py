@@ -563,11 +563,5 @@ def main():
         else:
             print("Entrada não esperada")
 
-def teste():
-    def criarRequisicao():
-        root = etree.Element("resposta")
-        retorno = etree.SubElement(root, "retorno")
-        retorno.text = '1'
-        return ctrl.to_string(root)
 
 main()

@@ -3,12 +3,13 @@ package serverLogic
 import (
 	"strconv"
 	"strings"
+
+	"Trabalho-XML-Cliente-Servidor/Servidor-Go/serverLog"
 )
 
 const (
 	FILES_SOURCE_PATH               string = "../Arquivos/"
 	XSD_REQUEST_PATH                string = FILES_SOURCE_PATH + "requisicao.xsd"
-	XSD_RESPONSE_PATH               string = FILES_SOURCE_PATH + "resposta.xsd"
 	XSD_HISTORICO_PATH              string = FILES_SOURCE_PATH + "historico.xsd"
 	XPATH_METHOD_NAME               string = "/requisicao/metodo/nome"
 	MSG_NUMBER_PARAMETERS_WRONG     string = "Número de parâmetros inválido. Verifique os parâmetros do método considerado."
@@ -51,14 +52,14 @@ func RequestXMLHandler(xml string) string {
 		valid_req   bool
 	)
 
-	PrintServerMsg("Verificando validade do XML de requisição...", false)
+	serverLog.PrintWaitingMsg("Verificando validade do XML de requisição...")
 
 	valid_req, error_sys = validateXML(xml, XSD_REQUEST_PATH)
 	if valid_req {
 		resp = MSG_INVALID_XSD
 	}
 
-	PrintServerMsg("Extraindo parêmetros da requisição...", false)
+	serverLog.PrintWaitingMsg("Extraindo parêmetros da requisição...")
 
 	method_name, _ = extractParameterValue(xml, XPATH_METHOD_NAME)
 	/*
@@ -69,7 +70,7 @@ func RequestXMLHandler(xml string) string {
 
 	method_name = strings.ToLower(method_name)
 
-	PrintServerMsg("Executando método solicitado pelo Cliente...", false)
+	serverLog.PrintWaitingMsg("Executando método solicitado pelo Cliente...")
 
 	switch method_name {
 	case "submeter":
@@ -78,12 +79,12 @@ func RequestXMLHandler(xml string) string {
 		resp = methodHandler(xml, consultaStatus, 1)
 	default:
 		if !error_sys {
-			PrintServerMsgOnlyTitle("Falha na execução do método! Nome inválido!")
+			serverLog.PrintErrorMsg("Falha na execução do método! Nome inválido!")
 			resp = MSG_INVALID_METHOD_NAME
 		}
 	}
 
-	PrintServerMsg("Construindo XML de resposta...", false)
+	serverLog.PrintWaitingMsg("Construindo XML de resposta...")
 
 	xml_resp = buildXMLResponse(resp)
 	return xml_resp
