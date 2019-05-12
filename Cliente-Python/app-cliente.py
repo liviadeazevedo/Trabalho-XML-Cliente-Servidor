@@ -407,19 +407,15 @@ class ControladorXML():
         print('Gerando', name, '...\n')
 
         texto.append("<!DOCTYPE html>\n<html lang='pt-BR'>\n\n<html>\n\n")
-        texto.append(
-            "\t<head>\n\t\t<title>Histórico</title>\n\t\t<meta charset = 'utf-8'>\n\t\t<link rel=\"stylesheet\" type=\"text/css\" href=\"styles.css\">\n" + "\t\t<link rel=\"shortcut icon\" href=\"ufrrj.jpg\" type=\"image/jpg\"/>\n\t</head>\n")
+        texto.append("\t<head>\n\t\t<title>Histórico</title>\n\t\t<meta charset = 'utf-8'>\n\t\t<link rel=\"stylesheet\" type=\"text/css\" href=\"estiloHtml/styles.css\">\n" + "\t\t<link rel=\"shortcut icon\" href=\"ufrrj.jpg\" type=\"image/jpg\"/>\n\t</head>\n")
         texto.append("\n\t<body>\n")
         texto.append("\n\t\t<header>\n")
-        texto.append(
-            "\t\t<a href=\"http://portal.ufrrj.br\" title=\"UFRRJ\"><img src=\"ufrrj.jpg\" class = \"imagem\" align = \"left\" alt=\"Falha na imagem\"></a>\n")
+        texto.append("\t\t<a href=\"http://portal.ufrrj.br\" title=\"UFRRJ\"><img src=\"estiloHtml/ufrrj.jpg\" class = \"imagem\" align = \"left\" alt=\"Falha na imagem\"></a>\n")
         texto.append("\t\t<h1><br>" + xml.find('universidade').find('nome').text + "</h1>\n")
         texto.append("\t\t<h1>" + xml.find('universidade').find('abreviacao').text + "</h1><br><br>\n")
         texto.append("\t\t</header>\n\n")
         texto.append("\n\t\t<div>\n")
-        texto.append(
-            "\t\t<img src=\"perfil.jpg\" class = \"imagemPerfil\" align = \"left\" title=\"Perfil\" alt=\"Falha na imagem\"><br>Curso: " + xml.find(
-                'curso').text + "<br>\n")
+        texto.append("\t\t<img src=\"estiloHtml/perfil.jpg\" class = \"imagemPerfil\" align = \"left\" title=\"Perfil\" alt=\"Falha na imagem\"><br>Curso: " + xml.find('curso').text + "<br>\n")
         texto.append("\t\tAluno: " + xml.find('aluno').text + "<br>\n")
         texto.append("\t\tMatrícula: " + xml.find('matricula').text + "<br>\n")
         texto.append("\t\tCR médio: " + xml.find('crMedio').text + "<br>\n")
@@ -430,15 +426,11 @@ class ControladorXML():
 
         texto.append("\n\t\t<section>\n")
         listaPeriodos = xml.find('periodos').findall('Periodo')
-        texto.append(
-            "\t\t\t<img src=\"legenda.png\" class = \"imagemLegenda\" align = \"right\" title=\"legenda\" alt=\"Falha na imagem\">\n")
+        texto.append("\t\t\t<img src=\"estiloHtml/legenda.png\" class = \"imagemLegenda\" align = \"right\" title=\"legenda\" alt=\"Falha na imagem\">\n")
         for i in range(len(listaPeriodos)):
-            texto.append(
-                "\t\t\t<br><br><table>\n")  # \n\t\t\t<tr><th>Ano Semestre</th><th>Creditos solicitados</th><th>Creditos acumulados</th><th>Creditos obtidos</th><th>Cr periodo</th></tr><br>\n")
+            texto.append("\t\t\t<br><br><table>\n")  # \n\t\t\t<tr><th>Ano Semestre</th><th>Creditos solicitados</th><th>Creditos acumulados</th><th>Creditos obtidos</th><th>Cr periodo</th></tr><br>\n")
             texto.append("\t\t\t<tr><th>" + listaPeriodos[i].find('anoSemestre').text + "</th></tr>\n")
-
-            texto.append(
-                "\t\t\t\t<tr><th>Código disciplina</th>" + "<th>Nome disciplina</th>" + "<th>Créditos</th>" + "<th>Nota</th>" + "<th>Situação</th></tr>\n")
+            texto.append("\t\t\t\t<tr><th>Código disciplina</th>" + "<th>Nome disciplina</th>" + "<th>Créditos</th>" + "<th>Nota</th>" + "<th>Situação</th></tr>\n")
 
             listaDisciplinasAA = listaPeriodos[i].find('disciplinas').findall('AtividadeAcademica')
             for j in range(len(listaDisciplinasAA)):
@@ -456,10 +448,8 @@ class ControladorXML():
                 texto.append("\t\t\t\t<td>" + listaDisciplinas[j].find('nota').text + "</td>\n")
                 texto.append("\t\t\t\t<td>" + listaDisciplinas[j].find('situacao').text + "</td></tr>\n\n")
 
-            texto.append("\t\t\t</tr><td></td><td>Créditos solicitados: " + listaPeriodos[i].find(
-                'creditosSolicitados').text + "</td>\n")
-            texto.append(
-                "\t\t\t<td>Créditos acumulados: " + listaPeriodos[i].find('creditosAcumulados').text + "</td>\n")
+            texto.append("\t\t\t</tr><td></td><td>Créditos solicitados: " + listaPeriodos[i].find('creditosSolicitados').text + "</td>\n")
+            texto.append("\t\t\t<td>Créditos acumulados: " + listaPeriodos[i].find('creditosAcumulados').text + "</td>\n")
             texto.append("\t\t\t<td>Créditos obtidos: " + listaPeriodos[i].find('creditosObtidos').text + "</td>\n")
             texto.append("\t\t\t<td>CR período: " + listaPeriodos[i].find('crPeriodo').text + "</td></tr>\n\n")
             texto.append("\t\t\t</table>\n\n")
