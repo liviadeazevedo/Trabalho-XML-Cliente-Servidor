@@ -13,10 +13,51 @@ import (
 
 const CONFIG_FILE string = "serverConfig.txt"
 
-//Função auxiliar do método "defineServerIPAndPort".
-func createConfigPortIpFile() (ip string, port string, e error) {
+func setConfig(old_config string, config_type string) (new_config string) {
+
 	reader := bufio.NewReader(os.Stdin)
 
+	if old_config == "" {
+		switch config_type {
+		case "IP":
+			serverLog.PrintServerMsg("Digite o IP da máquina do Servidor:", false)
+		case "porta":
+			serverLog.PrintServerMsg("Digite a porta da aplicação do Servidor:", false)
+		}
+
+		aux_config, _ := reader.ReadString('\n')
+		new_config = strings.Replace(aux_config, "\n", "", -1)
+		return
+	} else {
+		for {
+			serverLog.PrintServerMsg("Deseja alterar a configuração \""+config_type+"\"?\n(Sim ou Nao)", false)
+			op, _ := reader.ReadString('\n')
+			op = strings.Replace(op, "\n", "", -1)
+			op = strings.ToLower(op)
+
+			if op == "sim" {
+				switch config_type {
+				case "IP":
+					serverLog.PrintServerMsg("Digite o IP da máquina do Servidor:", false)
+				case "porta":
+					serverLog.PrintServerMsg("Digite a porta da aplicação do Servidor:", false)
+				}
+
+				aux_config, _ := reader.ReadString('\n')
+				new_config = strings.Replace(aux_config, "\n", "", -1)
+				return
+
+			} else if op == "nao" {
+				new_config = old_config
+				return
+			} else {
+				serverLog.PrintServerMsg("Opção inválida. Digite \"sim\" ou \"nao\".", false)
+			}
+		}
+	}
+}
+
+func createConfigPortIpFile(old_ip string, old_port string) (ip string, port string, e error) {
 	config_path_file_os := filepath.FromSlash(CONFIG_FILE)
 
 	new_file, err := os.Create(config_path_file_os)
@@ -26,19 +67,15 @@ func createConfigPortIpFile() (ip string, port string, e error) {
 	}
 	defer new_file.Close()
 
-	serverLog.PrintServerMsg("Digite o IP da máquina do Servidor:", false)
-	aux_ip, _ := reader.ReadString('\n')
-	ip = strings.Replace(aux_ip, "\n", "", -1)
-	serverLog.PrintServerMsg("Digite a porta da aplicação do Servidor:", false)
-	aux_port, _ := reader.ReadString('\n')
-	port = strings.Replace(aux_port, "\n", "", -1)
+	ip = setConfig(old_ip, "IP")
+	port = setConfig(old_port, "porta")
 
-	_, err = new_file.WriteString(aux_ip)
+	_, err = new_file.WriteString(ip + "\n")
 	if err != nil {
 		e = err
 		return
 	}
-	_, err = new_file.WriteString(aux_port)
+	_, err = new_file.WriteString(port + "\n")
 	if err != nil {
 		e = err
 		return
@@ -87,7 +124,7 @@ func defineServerIPAndPort() (ip string, port string, e error) {
 		reader := bufio.NewReader(os.Stdin)
 
 		for {
-			serverLog.PrintServerMsg("Já existe uma configuração com: ip = "+ip_port_split_array[0]+" e porta = "+ip_port_split_array[1]+". Deseja continuar com o mesmo?\n(Sim ou Nao)", false)
+			serverLog.PrintServerMsg("Já existe uma configuração com: IP = "+ip_port_split_array[0]+" e Porta = "+ip_port_split_array[1]+". Deseja continuar com o mesmo?\n(Sim ou Nao)", false)
 			resp, _ := reader.ReadString('\n')
 			resp = strings.ToLower(resp)
 			resp = strings.Replace(resp, "\n", "", -1)
@@ -105,7 +142,7 @@ func defineServerIPAndPort() (ip string, port string, e error) {
 					return
 				}
 
-				ip, port, e = createConfigPortIpFile()
+				ip, port, e = createConfigPortIpFile(ip_port_split_array[0], ip_port_split_array[1])
 				return
 			} else {
 				serverLog.PrintServerMsg("Opção inválida. Digite \"sim\" ou \"nao\".", false)
@@ -113,7 +150,7 @@ func defineServerIPAndPort() (ip string, port string, e error) {
 		}
 
 	} else {
-		ip, port, e = createConfigPortIpFile()
+		ip, port, e = createConfigPortIpFile("", "")
 		return
 	}
 }
@@ -131,7 +168,7 @@ func recieveNotification(msg []byte, clinetId int, protocolo int) {
 func main() {
 	ip, port, e := defineServerIPAndPort()
 	if e != nil {
-		serverLog.PrintServerMsg("Falha ao definir o ip e a porta por input. O padrão será utilizado")
+		serverLog.PrintErrorMsg("Falha ao definir o ip e a porta por input. O padrão será utilizado")
 		ip, port = "", ""
 	}
 	serverLog.PrintWaitingMsg("Se registrando no observer...")
