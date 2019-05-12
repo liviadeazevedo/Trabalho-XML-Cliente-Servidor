@@ -1,5 +1,6 @@
 import locale
 import os
+import webbrowser
 from io import StringIO
 
 from lxml import etree
@@ -483,7 +484,8 @@ class ControladorXML():
             option = input("\nDeseja abrir a página gerada? (S / N)\n")
 
             if (option == 's' or option == 'S' or option == 'sim' or option == 'yes' or option == 'y'):
-                os.startfile(os.path.abspath(name))
+                #os.startfile(os.path.abspath(name))
+                webbrowser.open(os.path.abspath(name))
                 flag = True
 
             elif (option == 'n' or option == 'N' or option == 'nao' or option == 'not' or option == 'no'):
