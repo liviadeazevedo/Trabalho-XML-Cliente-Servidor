@@ -1,14 +1,11 @@
-import locale
 import os
+import webbrowser
+
 from io import StringIO
-
 from lxml import etree
-
 from sys import exit
 from socket import *
 from threading import *
-
-import time
 
 def_cod = 'utf-8'
 TESTE = False
@@ -32,6 +29,7 @@ class ClientSocket(Thread):
         self.recv_msg = b'' # msg recebida
         self.onThread = True # indicador para desligar Thread
         self._need_read = False
+        self.LENMAX = 1400
 
         try:
             addrsFileLines = open("addrs.txt", "r").readlines()
@@ -120,17 +118,11 @@ class ClientSocket(Thread):
         totalsent = 0
 
         while totalsent < total_len:
-            try:
-                sent = self.sock.send(data[totalsent:])
-            except Exception as e:
-                print(e)
-                exit(1)
+            sent = self.sock.send(data[totalsent:]) # min(totalsent + self.LENMAX, total_len - totalsent)
+            if sent == 0:
+                raise RuntimeError("socket connection broken")
 
-            else:
-                if sent == 0:
-                    raise RuntimeError("socket connection broken")
-
-                totalsent += sent
+            totalsent += sent
 
     def _receive(self):
         ''' Método que roda na thread para receber os dados que são recebidos da rede e concatenar no self.recvBuffer'''
@@ -166,12 +158,24 @@ class ClientSocket(Thread):
         return int(hdr)
 
     def _read_msg(self, msg_len):
-        return self.sock.recv(msg_len)
+        chunks = []
+        bytes_recv = 0
+        while bytes_recv < msg_len:
+            chunk = self.sock.recv(min(self.LENMAX, msg_len - bytes_recv))
+            if chunk == b'':
+                raise RuntimeError("connection broken")
+            chunks.append(chunk)
+            bytes_recv = bytes_recv + len(chunk)
+        return b''.join(chunks)
 
     def read(self):
         lock.release()
+        i = 0
         while self.recv_msg == b'':
-            pass
+            if i == 1000000:
+                self.close_con()
+                raise RuntimeError("Demorou tempo demais para receber uma resposta")
+            i += 1
         msg = self.recv_msg
         self.recv_msg = b''
         return msg.decode(def_cod)
@@ -412,17 +416,17 @@ class ControladorXML():
 
         texto.append("<!DOCTYPE html>\n<html lang='pt-BR'>\n\n<html>\n\n")
         texto.append(
-            "\t<head>\n\t\t<title>Histórico</title>\n\t\t<meta charset = 'utf-8'>\n\t\t<link rel=\"stylesheet\" type=\"text/css\" href=\"styles.css\">\n" + "\t\t<link rel=\"shortcut icon\" href=\"ufrrj.jpg\" type=\"image/jpg\"/>\n\t</head>\n")
+            "\t<head>\n\t\t<title>Histórico</title>\n\t\t<meta charset = 'utf-8'>\n\t\t<link rel=\"stylesheet\" type=\"text/css\" href=\"estiloHtml/styles.css\">\n" + "\t\t<link rel=\"shortcut icon\" href=\"ufrrj.jpg\" type=\"image/jpg\"/>\n\t</head>\n")
         texto.append("\n\t<body>\n")
         texto.append("\n\t\t<header>\n")
         texto.append(
-            "\t\t<a href=\"http://portal.ufrrj.br\" title=\"UFRRJ\"><img src=\"ufrrj.jpg\" class = \"imagem\" align = \"left\" alt=\"Falha na imagem\"></a>\n")
+            "\t\t<a href=\"http://portal.ufrrj.br\" title=\"UFRRJ\"><img src=\"estiloHtml/ufrrj.jpg\" class = \"imagem\" align = \"left\" alt=\"Falha na imagem\"></a>\n")
         texto.append("\t\t<h1><br>" + xml.find('universidade').find('nome').text + "</h1>\n")
         texto.append("\t\t<h1>" + xml.find('universidade').find('abreviacao').text + "</h1><br><br>\n")
         texto.append("\t\t</header>\n\n")
         texto.append("\n\t\t<div>\n")
         texto.append(
-            "\t\t<img src=\"perfil.jpg\" class = \"imagemPerfil\" align = \"left\" title=\"Perfil\" alt=\"Falha na imagem\"><br>Curso: " + xml.find(
+            "\t\t<img src=\"estiloHtml/perfil.jpg\" class = \"imagemPerfil\" align = \"left\" title=\"Perfil\" alt=\"Falha na imagem\"><br>Curso: " + xml.find(
                 'curso').text + "<br>\n")
         texto.append("\t\tAluno: " + xml.find('aluno').text + "<br>\n")
         texto.append("\t\tMatrícula: " + xml.find('matricula').text + "<br>\n")
@@ -435,7 +439,7 @@ class ControladorXML():
         texto.append("\n\t\t<section>\n")
         listaPeriodos = xml.find('periodos').findall('Periodo')
         texto.append(
-            "\t\t\t<img src=\"legenda.png\" class = \"imagemLegenda\" align = \"right\" title=\"legenda\" alt=\"Falha na imagem\">\n")
+            "\t\t\t<img src=\"estiloHtml/legenda.png\" class = \"imagemLegenda\" align = \"right\" title=\"legenda\" alt=\"Falha na imagem\">\n")
         for i in range(len(listaPeriodos)):
             texto.append(
                 "\t\t\t<br><br><table>\n")  # \n\t\t\t<tr><th>Ano Semestre</th><th>Creditos solicitados</th><th>Creditos acumulados</th><th>Creditos obtidos</th><th>Cr periodo</th></tr><br>\n")
@@ -488,7 +492,8 @@ class ControladorXML():
             option = input("\nDeseja abrir a página gerada? (S / N)\n")
 
             if (option == 's' or option == 'S' or option == 'sim' or option == 'yes' or option == 'y'):
-                os.startfile(os.path.abspath(name))
+                #os.startfile(os.path.abspath(name))
+                webbrowser.open(os.path.abspath(name))
                 flag = True
 
             elif (option == 'n' or option == 'N' or option == 'nao' or option == 'not' or option == 'no'):
