@@ -62,11 +62,6 @@ func RequestXMLHandler(xml string) string {
 	serverLog.PrintWaitingMsg("Extraindo parêmetros da requisição...")
 
 	method_name, _ = extractParameterValue(xml, XPATH_METHOD_NAME)
-	/*
-		if error_sys {
-			resp = MSG_FAILED_PARSE_XML_RESPONSE
-		}
-	*/
 
 	method_name = strings.ToLower(method_name)
 
@@ -92,7 +87,6 @@ func RequestXMLHandler(xml string) string {
 
 /* envia um boletim como parâmetro e retorna um número inteiro (0 - sucesso, 1 - XML inválido, 2 - XML mal-formado, 3 - Erro Interno) */
 
-//func submeter(Boletim string) int
 func submeter(parms map[string]string) string {
 
 	parms_names := []string{"boletim"}
@@ -123,7 +117,6 @@ func submeter(parms map[string]string) string {
 /* consulta o status da inscrição do candidato com o CPF informado como parâmetro. Possíveis retornos: 0 - Candidato não encontrado, 1 - Em processamento,
 2 - Candidato Aprovado e Selecionado, 3 - Candidato Aprovado e em Espera, 4 - Candidato Não Aprovado. */
 
-//func consultaStatus(cpf string) int
 func consultaStatus(parms map[string]string) string {
 
 	parms_names := []string{"cpf"}

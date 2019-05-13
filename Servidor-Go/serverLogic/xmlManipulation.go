@@ -133,7 +133,6 @@ func validateXML(xml, xsd_path string) (bool, bool) {
 
 	var error_concat string
 
-	//Permitir diretório cross-plataform
 	xsd_path_os := filepath.FromSlash(xsd_path)
 
 	schema, err := xsd.ParseFromFile(xsd_path_os)
