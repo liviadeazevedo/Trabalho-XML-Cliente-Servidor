@@ -1,11 +1,13 @@
 package serverLogic
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
+
+	"Trabalho-XML-Cliente-Servidor/Servidor-Go/serverLog"
 
 	//Manipulação de xml
 	"github.com/lestrrat-go/libxml2"
@@ -16,11 +18,11 @@ import (
 const (
 	XML_FORMAT_PATH               string = FILES_SOURCE_PATH + "format-response.xml"
 	XPATH_METHODS_PARAMETERS      string = "/requisicao/metodo/parametros/parametro[0]"
-	XML_FORMAT_FAILED_MSG         string = "==========XML is poorly formatted...=========="
-	XML_FORMAT_SUCCEDED_MSG       string = "==========XML is well formatted!=========="
-	XML_VALIDATION_FAILED_MSG     string = "==========XML is not valid...=========="
-	XML_VALIDATION_SUCCEDED_MSG   string = "==========XML is valid!=========="
-	MSG_FAILED_BUILD_XML_RESPONSE string = "System failed to build XML response to Client."
+	XML_FORMAT_FAILED_MSG         string = "XML está mal formatado..."
+	XML_FORMAT_SUCCEDED_MSG       string = "XML está bem formatado!"
+	XML_VALIDATION_FAILED_MSG     string = "XML não é válido..."
+	XML_VALIDATION_SUCCEDED_MSG   string = "XML é válido!"
+	MSG_FAILED_BUILD_XML_RESPONSE string = "O sistema falhou em construir um XML de resposta para o Cliente."
 )
 
 // Constroí a string do xml correspondente para a resposta ao Cliente.
@@ -49,12 +51,12 @@ func buildXMLResponse(value string) string {
 func checkXML(xml string) bool {
 
 	_, err := libxml2.ParseString(xml)
-	poorly_formatted := checkError(err, false)
+	poorly_formatted := checkError(err, true)
 
 	if poorly_formatted {
-		fmt.Println("\n" + XML_FORMAT_FAILED_MSG)
+		serverLog.PrintErrorMsg(XML_FORMAT_FAILED_MSG)
 	} else {
-		fmt.Println(XML_FORMAT_SUCCEDED_MSG)
+		serverLog.PrintServerMsg(XML_FORMAT_SUCCEDED_MSG, false)
 	}
 
 	return !poorly_formatted
@@ -66,20 +68,20 @@ func extractParameterValue(xml, xpath_str string) (string, bool) {
 	var value string
 
 	doc, err := libxml2.ParseString(xml)
-	error_sys := checkError(err, false)
+	error_sys := checkError(err, true)
 
 	if error_sys {
 		return "", true
 	}
 
 	root_xml, err := doc.DocumentElement()
-	error_sys = checkError(err, false)
+	error_sys = checkError(err, true)
 	if error_sys {
 		return "", true
 	}
 
 	ctx, err := xpath.NewContext(root_xml)
-	error_sys = checkError(err, false)
+	error_sys = checkError(err, true)
 	if error_sys {
 		return "", true
 	}
@@ -129,8 +131,12 @@ func extractParametersValues(xml string) (map[string]string, bool) {
 //Valida um xml dado um xsd.
 func validateXML(xml, xsd_path string) (bool, bool) {
 
-	schema, err := xsd.ParseFromFile(xsd_path)
-	error_sys := checkError(err, false)
+	var error_concat string
+
+	xsd_path_os := filepath.FromSlash(xsd_path)
+
+	schema, err := xsd.ParseFromFile(xsd_path_os)
+	error_sys := checkError(err, true)
 	if error_sys {
 		return false, true
 	}
@@ -138,20 +144,21 @@ func validateXML(xml, xsd_path string) (bool, bool) {
 	defer schema.Free()
 
 	doc, err := libxml2.ParseString(xml)
-	error_sys = checkError(err, false)
+	error_sys = checkError(err, true)
 	if error_sys {
 		return false, true
 	}
 
 	if err := schema.Validate(doc); err != nil {
 		for _, e := range err.(xsd.SchemaValidationError).Errors() {
-			fmt.Println("Error: ", e.Error())
+			error_concat = error_concat + "Error: " + e.Error() + "\n"
 		}
-		fmt.Println(XML_VALIDATION_FAILED_MSG)
+		serverLog.PrintServerMsgWithTitle("Erros de Validação. XSD: "+xsd_path, error_concat)
+		serverLog.PrintErrorMsg(XML_VALIDATION_FAILED_MSG)
 		return false, false
 	}
 
-	fmt.Println(XML_VALIDATION_SUCCEDED_MSG)
+	serverLog.PrintServerMsg(XML_VALIDATION_SUCCEDED_MSG, false)
 
 	return true, false
 }

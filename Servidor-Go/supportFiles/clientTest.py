@@ -11,7 +11,7 @@ import sys
 host="127.0.0.1"            # Set the server address to variable host
 
 port=4446               # Sets the variable port to 4444
-protocol=sys.argv[3]
+protocol= sys.argv[3] 
 
 from socket import *             # Imports socket module
 

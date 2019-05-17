@@ -1,20 +1,14 @@
-import locale
 import os
 import webbrowser
+
 from io import StringIO
-
 from lxml import etree
-
 from sys import exit
 from socket import *
 from threading import *
 
-import time
-
 def_cod = 'utf-8'
 TESTE = False
-
-###########
 
 received_msg = ''
 lock = Lock()
@@ -31,14 +25,16 @@ class ClientSocket(Thread):
         self._hdr_num = 2 # numero de cabeçalhos
         self.pHdr_len = 2 # tamanho do proto cabeçalho
         self.recv_msg = b'' # msg recebida
-        # self.onThread = True # indicador para desligar Thread
+        self.onThread = True # indicador para desligar Thread
+        self._need_read = False
+        self.LENMAX = 1400
 
         try:
             addrsFileLines = open("addrs.txt", "r").readlines()
         except Exception as e:
             host = 'localhost'
             port = '4446'
-            print(str(e) + "Creating a file with default host:\'" + host + "\', port:" + port)
+            print(str(e) + "\nCreating a file with default host:\'" + host + "\', port:" + port)
             addrs = open("addrs.txt", "w+")
             addrs.write(host+"\n"+port)
         else:
@@ -46,7 +42,12 @@ class ClientSocket(Thread):
 
     def run(self):
         # Método que implementa o que a Thread roda
-        self.recv_msg = self._receive()
+        while self.onThread:
+            lock.acquire()
+            try:
+                self.recv_msg = self._receive()
+            except ConnectionAbortedError:
+                pass
 
     def defineAddrs(self):
         ans = input(
@@ -79,6 +80,7 @@ class ClientSocket(Thread):
             self.port = port
         try:
             self.sock.connect((self.host, self.port))
+            self.start()
             return True
 
         except Exception as e:
@@ -97,10 +99,8 @@ class ClientSocket(Thread):
             if ans == '0':
                 exit(0)
 
-            return False
         else:
             self.sock.send(str(self._hdr_num).encode(def_cod))
-            return True
 
     def send(self, msg):
         ''' Método para envio de mensagens'''
@@ -116,16 +116,11 @@ class ClientSocket(Thread):
         totalsent = 0
 
         while totalsent < total_len:
-            try:
-                sent = self.sock.send(data[totalsent:])
-            except Exception as e:
-                exit(1)
+            sent = self.sock.send(data[totalsent:]) # min(totalsent + self.LENMAX, total_len - totalsent)
+            if sent == 0:
+                raise RuntimeError("socket connection broken")
 
-            else:
-                if sent == 0:
-                    raise RuntimeError("socket connection broken")
-
-                totalsent += sent
+            totalsent += sent
 
     def _receive(self):
         ''' Método que roda na thread para receber os dados que são recebidos da rede e concatenar no self.recvBuffer'''
@@ -161,13 +156,26 @@ class ClientSocket(Thread):
         return int(hdr)
 
     def _read_msg(self, msg_len):
-        return self.sock.recv(msg_len)
+        chunks = []
+        bytes_recv = 0
+        while bytes_recv < msg_len:
+            chunk = self.sock.recv(min(self.LENMAX, msg_len - bytes_recv))
+            if chunk == b'':
+                raise RuntimeError("connection broken")
+            chunks.append(chunk)
+            bytes_recv = bytes_recv + len(chunk)
+        return b''.join(chunks)
 
     def read(self):
-        self.start()
+        lock.release()
+        i = 0
         while self.recv_msg == b'':
-            pass
+            if i == 1000000:
+                self.close_con()
+                raise RuntimeError("Demorou tempo demais para receber uma resposta")
+            i += 1
         msg = self.recv_msg
+        self.recv_msg = b''
         return msg.decode(def_cod)
 
     def pscan(self, port):
@@ -179,7 +187,7 @@ class ClientSocket(Thread):
             return False
 
     def close_con(self):
-        # self.onThread = False
+        self.onThread = False
         self.sock.close()
 
 class ClientSimple(ClientSocket):
@@ -232,7 +240,8 @@ class ClientSimple(ClientSocket):
 class Candidato():
     def _init(self, cpf):
         self.cpf = cpf
-        self.boletim = open('boletins\\' + cpf + '.xml', 'r+', encoding=def_cod).read()
+        #ADICIONAR BARRA DEFINIDA POR SO
+        self.boletim = open('boletins/' + cpf + '.xml', 'r+', encoding=def_cod).read()
         #self.boletimString = open('boletins\\' + cpf + '.xml', 'r+', encoding=def_cod).readlines()
         self.mensageiro = ClientSocket()
         self.mensageiro.connect_pd()
@@ -242,6 +251,7 @@ class Candidato():
         ctrlXML.lerXSD("resposta")
 
         msg = ctrlXML.criarRequisicao("submeter", {'Boletim': self.boletim})
+
         self.mensageiro.send(msg)
         resp = self.mensageiro.read()
         xml_resp = ctrlXML.toXML(resp)
@@ -253,7 +263,7 @@ class Candidato():
             print(e)
 
         else:
-            resp = xml_resp.getroot().find('resposta').find('retorno').text
+            resp = xml_resp.getroot().find('retorno').text
             if resp == '0':
                 print("sucesso")
             elif resp == '1':
@@ -279,7 +289,7 @@ class Candidato():
             print(e)
 
         else:
-            resp = xml_resp.getroot().find('resposta').find('retorno').text
+            resp = xml_resp.getroot().find('retorno').text
             if resp == '0':
                 print("Candidato não encontrado")
             elif resp == '1':
@@ -301,23 +311,19 @@ class Candidato():
             print("CPF informado é inválido")
             return None
         else:
+            print("Login efetuado com sucesso")
             return c
 
 class ControladorXML():
     # Caso seja necessário mais alguma funcionalidade que lide com XML/XSD implementar nesta classe
     def toXML(self, nome):
-        # Abrindo o arquivo xml
-        try:
-            str_xml = open(nome, "r+", encoding=def_cod).read()
-        except FileNotFoundError:
-            str_xml = nome
-
         # Transformando o arquivo aberto em arvore de elementos
-        return etree.parse(StringIO(str_xml))
+        return etree.parse(StringIO(nome))
 
     def lerXSD(self, nome_arq):
         # Abrindo o arquivo xsd
-        xsd_arq = open("schemas\\"+nome_arq+".xsd", "r+", encoding=def_cod)
+        #ADICIONAR BARRA DEFINIDA POR SO
+        xsd_arq = open("schemas/"+nome_arq+".xsd", "r+", encoding=def_cod)
 
         # Transformando o arquivo aberto em arvore de elementos
         xsd_doc = etree.parse(xsd_arq)
@@ -344,7 +350,7 @@ class ControladorXML():
             parametro = etree.SubElement(parametros, "parametro")
             etree.SubElement(parametro, "nome").text = nome
             etree.SubElement(parametro, "valor").text = etree.CDATA(valor)
-
+py 
         return self.to_string(root)
 
     def imprimir(self,XMLdoHistorico):  # parametro: string
@@ -407,15 +413,19 @@ class ControladorXML():
         print('Gerando', name, '...\n')
 
         texto.append("<!DOCTYPE html>\n<html lang='pt-BR'>\n\n<html>\n\n")
-        texto.append("\t<head>\n\t\t<title>Histórico</title>\n\t\t<meta charset = 'utf-8'>\n\t\t<link rel=\"stylesheet\" type=\"text/css\" href=\"estiloHtml/styles.css\">\n" + "\t\t<link rel=\"shortcut icon\" href=\"ufrrj.jpg\" type=\"image/jpg\"/>\n\t</head>\n")
+        texto.append(
+            "\t<head>\n\t\t<title>Histórico</title>\n\t\t<meta charset = 'utf-8'>\n\t\t<link rel=\"stylesheet\" type=\"text/css\" href=\"estiloHtml/styles.css\">\n" + "\t\t<link rel=\"shortcut icon\" href=\"ufrrj.jpg\" type=\"image/jpg\"/>\n\t</head>\n")
         texto.append("\n\t<body>\n")
         texto.append("\n\t\t<header>\n")
-        texto.append("\t\t<a href=\"http://portal.ufrrj.br\" title=\"UFRRJ\"><img src=\"estiloHtml/ufrrj.jpg\" class = \"imagem\" align = \"left\" alt=\"Falha na imagem\"></a>\n")
+        texto.append(
+            "\t\t<a href=\"http://portal.ufrrj.br\" title=\"UFRRJ\"><img src=\"estiloHtml/ufrrj.jpg\" class = \"imagem\" align = \"left\" alt=\"Falha na imagem\"></a>\n")
         texto.append("\t\t<h1><br>" + xml.find('universidade').find('nome').text + "</h1>\n")
         texto.append("\t\t<h1>" + xml.find('universidade').find('abreviacao').text + "</h1><br><br>\n")
         texto.append("\t\t</header>\n\n")
         texto.append("\n\t\t<div>\n")
-        texto.append("\t\t<img src=\"estiloHtml/perfil.jpg\" class = \"imagemPerfil\" align = \"left\" title=\"Perfil\" alt=\"Falha na imagem\"><br>Curso: " + xml.find('curso').text + "<br>\n")
+        texto.append(
+            "\t\t<img src=\"estiloHtml/perfil.jpg\" class = \"imagemPerfil\" align = \"left\" title=\"Perfil\" alt=\"Falha na imagem\"><br>Curso: " + xml.find(
+                'curso').text + "<br>\n")
         texto.append("\t\tAluno: " + xml.find('aluno').text + "<br>\n")
         texto.append("\t\tMatrícula: " + xml.find('matricula').text + "<br>\n")
         texto.append("\t\tCR médio: " + xml.find('crMedio').text + "<br>\n")
@@ -426,7 +436,8 @@ class ControladorXML():
 
         texto.append("\n\t\t<section>\n")
         listaPeriodos = xml.find('periodos').findall('Periodo')
-        texto.append("\t\t\t<img src=\"estiloHtml/legenda.png\" class = \"imagemLegenda\" align = \"right\" title=\"legenda\" alt=\"Falha na imagem\">\n")
+        texto.append(
+            "\t\t\t<img src=\"estiloHtml/legenda.png\" class = \"imagemLegenda\" align = \"right\" title=\"legenda\" alt=\"Falha na imagem\">\n")
         for i in range(len(listaPeriodos)):
             texto.append("\t\t\t<br><br><table>\n")  # \n\t\t\t<tr><th>Ano Semestre</th><th>Creditos solicitados</th><th>Creditos acumulados</th><th>Creditos obtidos</th><th>Cr periodo</th></tr><br>\n")
             texto.append("\t\t\t<tr><th>" + listaPeriodos[i].find('anoSemestre').text + "</th></tr>\n")
@@ -497,14 +508,17 @@ def main():
         "1 - Fazer Login\n"
         "2 - Submeter boletim\n"
         "3 - Consultar status\n"
-        "4 - Fazer Logoff\n"
-        "5 - Visualizar boletim\n"
+        "4 - Visualizar boletim\n"
+        "5 - Fazer Logoff\n"
         "0 - Sair do programa\n"
         "_______________________________\n\n")
         print()
 
         if ans == '1':
-            c = Candidato().identificarCandidato()
+            if c is None:
+                c = Candidato().identificarCandidato()
+            else:
+                print("Já está logado, para fazer login com outra onta faça primeiro o Logoff")
         elif ans == '2':
             if c is None:
                 print("Comando inválido, faça Login primeiro")
@@ -519,12 +533,6 @@ def main():
             if c is None:
                 print("Comando inválido, faça Login primeiro")
             else:
-                c.mensageiro.close_con()
-                c = None
-        elif ans == '5':
-            if c is None:
-                print("Comando inválido, faça Login primeiro")
-            else:
                 option = input("Digite 1 para visualizar aqui ou 2 para abrir em uma página web\n")
                 if(option == '1'):
                     ctrlXML = ControladorXML()
@@ -534,55 +542,19 @@ def main():
                     ctrlXML.geraHtml(c.boletim)
                 else:
                     print("Opção inválida\n")
+        elif ans == '5':
+            if c is None:
+                print("Comando inválido, faça Login primeiro")
+            else:
+                c.mensageiro.close_con()
+                c = None
+                print("Logoff feito com sucesso")
         elif ans == '0':
-            c.mensageiro.close_con()
+            if c is not None:
+                c.mensageiro.close_con()
             break
         else:
             print("Entrada não esperada")
 
-def teste():
-    '''Operações de teste'''
-    ctrl = ControladorXML()
-
-    # ctrlXML = ControladorXML()
-    #
-    # xml = ctrlXML.criarRequisicao("consultaStatus", {'cpf': '0001'})
-    #
-    # print(etree.tostring(xml))
-    # pass
-
-# Função comentada para consulta de operações necessárias
-'''def run():
-
-    global received_msg
-
-    waiting_HE = False
-
-    ctrl_XML = ControladorXML()
-
-    xsd = ctrl_XML.lerXSD("he_schema.xsd")
-
-    c = MySocket()
-
-    c.connect(host, port)
-
-    while waiting_HE:
-
-        with lock:
-            if received_msg != '':
-
-                if TESTE:
-                    print("Olha: " + received_msg)
-
-                if validate(received_msg, xsd):
-                    imprimir(received_msg)
-                else:
-
-                    print("Algo de errado não está certo, XML não corresponde ao Schema")
-
-
-                received_msg = ''
-                waiting_HE = False
-'''
 
 main()

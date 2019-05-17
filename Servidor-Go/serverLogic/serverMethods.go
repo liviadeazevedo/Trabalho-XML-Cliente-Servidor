@@ -3,18 +3,20 @@ package serverLogic
 import (
 	"strconv"
 	"strings"
+
+	"Trabalho-XML-Cliente-Servidor/Servidor-Go/serverLog"
 )
 
 const (
 	FILES_SOURCE_PATH               string = "../Arquivos/"
 	XSD_REQUEST_PATH                string = FILES_SOURCE_PATH + "requisicao.xsd"
-	XSD_RESPONSE_PATH               string = FILES_SOURCE_PATH + "resposta.xsd"
 	XSD_HISTORICO_PATH              string = FILES_SOURCE_PATH + "historico.xsd"
 	XPATH_METHOD_NAME               string = "/requisicao/metodo/nome"
-	MSG_NUMBER_PARAMETERS_WRONG     string = "Wrong parameters number. Check the method parameters."
-	MSG_INVALID_METHOD_NAME         string = "Invalid method name. Select a valid one."
-	MSG_FAILED_PARSE_XML_RESPONSE   string = "Failed to parser request XML. Please, check the request XML."
-	MSG_FAILED_EXTRACT_PARMS_VALUES string = "Failed in extract parameters values from XML request."
+	MSG_NUMBER_PARAMETERS_WRONG     string = "Número de parâmetros inválido. Verifique os parâmetros do método considerado."
+	MSG_INVALID_METHOD_NAME         string = "Nome do método inválido. Selecione um válido."
+	MSG_FAILED_PARSE_XML_RESPONSE   string = "Falha no processamento do XML da requisição. Por favor, verifique este XML."
+	MSG_FAILED_EXTRACT_PARMS_VALUES string = "Falha em extrair os valores dos parâmetros no XML da requisição."
+	MSG_INVALID_XSD                 string = "XML da requisição é inválido. Por favor, verifique este XML."
 )
 
 func methodHandler(xml string, method func(map[string]string) string, num_parms int) (ret_value string) {
@@ -47,15 +49,23 @@ func RequestXMLHandler(xml string) string {
 		resp        string
 		method_name string
 		error_sys   bool
+		valid_req   bool
 	)
 
-	method_name, error_sys = extractParameterValue(xml, XPATH_METHOD_NAME)
+	serverLog.PrintWaitingMsg("Verificando validade do XML de requisição...")
 
-	if error_sys {
-		resp = MSG_FAILED_PARSE_XML_RESPONSE
+	valid_req, error_sys = validateXML(xml, XSD_REQUEST_PATH)
+	if valid_req {
+		resp = MSG_INVALID_XSD
 	}
 
+	serverLog.PrintWaitingMsg("Extraindo parêmetros da requisição...")
+
+	method_name, _ = extractParameterValue(xml, XPATH_METHOD_NAME)
+
 	method_name = strings.ToLower(method_name)
+
+	serverLog.PrintWaitingMsg("Executando método solicitado pelo Cliente...")
 
 	switch method_name {
 	case "submeter":
@@ -64,9 +74,12 @@ func RequestXMLHandler(xml string) string {
 		resp = methodHandler(xml, consultaStatus, 1)
 	default:
 		if !error_sys {
+			serverLog.PrintErrorMsg("Falha na execução do método! Nome inválido!")
 			resp = MSG_INVALID_METHOD_NAME
 		}
 	}
+
+	serverLog.PrintWaitingMsg("Construindo XML de resposta...")
 
 	xml_resp = buildXMLResponse(resp)
 	return xml_resp
@@ -74,7 +87,6 @@ func RequestXMLHandler(xml string) string {
 
 /* envia um boletim como parâmetro e retorna um número inteiro (0 - sucesso, 1 - XML inválido, 2 - XML mal-formado, 3 - Erro Interno) */
 
-//func submeter(Boletim string) int
 func submeter(parms map[string]string) string {
 
 	parms_names := []string{"boletim"}
@@ -105,7 +117,6 @@ func submeter(parms map[string]string) string {
 /* consulta o status da inscrição do candidato com o CPF informado como parâmetro. Possíveis retornos: 0 - Candidato não encontrado, 1 - Em processamento,
 2 - Candidato Aprovado e Selecionado, 3 - Candidato Aprovado e em Espera, 4 - Candidato Não Aprovado. */
 
-//func consultaStatus(cpf string) int
 func consultaStatus(parms map[string]string) string {
 
 	parms_names := []string{"cpf"}

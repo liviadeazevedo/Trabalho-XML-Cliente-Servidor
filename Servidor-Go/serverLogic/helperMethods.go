@@ -1,20 +1,21 @@
 package serverLogic
 
 import (
-	"fmt"
 	"strings"
+
+	"Trabalho-XML-Cliente-Servidor/Servidor-Go/serverLog"
 )
 
 const (
-	MSG_INVALID_PARAMETERS string = "Invalid parameters received. Missing parameters: "
-	MSG_NOT_A_NUMBER       string = "'cpf' parameter is not valid. Please, send a valid one."
+	MSG_INVALID_PARAMETERS string = "Parâmetros recebidos inválidos. Parâmetros faltantes: "
+	MSG_NOT_A_NUMBER       string = "Parâmetro 'cpf' inválido. Por favor, envie um válido."
 )
 
 func checkError(err error, print_error bool) bool {
 
 	if err != nil {
 		if print_error {
-			fmt.Println(err)
+			serverLog.PrintErrorMsg(err.Error())
 		}
 		return true
 	}
