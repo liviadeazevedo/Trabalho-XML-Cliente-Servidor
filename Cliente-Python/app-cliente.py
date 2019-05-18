@@ -10,6 +10,8 @@ from threading import *
 def_cod = 'utf-8'
 TESTE = False
 
+###########
+
 received_msg = ''
 lock = Lock()
 
@@ -350,7 +352,7 @@ class ControladorXML():
             parametro = etree.SubElement(parametros, "parametro")
             etree.SubElement(parametro, "nome").text = nome
             etree.SubElement(parametro, "valor").text = etree.CDATA(valor)
-py 
+
         return self.to_string(root)
 
     def imprimir(self,XMLdoHistorico):  # parametro: string
@@ -439,9 +441,12 @@ py
         texto.append(
             "\t\t\t<img src=\"estiloHtml/legenda.png\" class = \"imagemLegenda\" align = \"right\" title=\"legenda\" alt=\"Falha na imagem\">\n")
         for i in range(len(listaPeriodos)):
-            texto.append("\t\t\t<br><br><table>\n")  # \n\t\t\t<tr><th>Ano Semestre</th><th>Creditos solicitados</th><th>Creditos acumulados</th><th>Creditos obtidos</th><th>Cr periodo</th></tr><br>\n")
+            texto.append(
+                "\t\t\t<br><br><table>\n")  # \n\t\t\t<tr><th>Ano Semestre</th><th>Creditos solicitados</th><th>Creditos acumulados</th><th>Creditos obtidos</th><th>Cr periodo</th></tr><br>\n")
             texto.append("\t\t\t<tr><th>" + listaPeriodos[i].find('anoSemestre').text + "</th></tr>\n")
-            texto.append("\t\t\t\t<tr><th>Código disciplina</th>" + "<th>Nome disciplina</th>" + "<th>Créditos</th>" + "<th>Nota</th>" + "<th>Situação</th></tr>\n")
+
+            texto.append(
+                "\t\t\t\t<tr><th>Código disciplina</th>" + "<th>Nome disciplina</th>" + "<th>Créditos</th>" + "<th>Nota</th>" + "<th>Situação</th></tr>\n")
 
             listaDisciplinasAA = listaPeriodos[i].find('disciplinas').findall('AtividadeAcademica')
             for j in range(len(listaDisciplinasAA)):
@@ -459,8 +464,10 @@ py
                 texto.append("\t\t\t\t<td>" + listaDisciplinas[j].find('nota').text + "</td>\n")
                 texto.append("\t\t\t\t<td>" + listaDisciplinas[j].find('situacao').text + "</td></tr>\n\n")
 
-            texto.append("\t\t\t</tr><td></td><td>Créditos solicitados: " + listaPeriodos[i].find('creditosSolicitados').text + "</td>\n")
-            texto.append("\t\t\t<td>Créditos acumulados: " + listaPeriodos[i].find('creditosAcumulados').text + "</td>\n")
+            texto.append("\t\t\t</tr><td></td><td>Créditos solicitados: " + listaPeriodos[i].find(
+                'creditosSolicitados').text + "</td>\n")
+            texto.append(
+                "\t\t\t<td>Créditos acumulados: " + listaPeriodos[i].find('creditosAcumulados').text + "</td>\n")
             texto.append("\t\t\t<td>Créditos obtidos: " + listaPeriodos[i].find('creditosObtidos').text + "</td>\n")
             texto.append("\t\t\t<td>CR período: " + listaPeriodos[i].find('crPeriodo').text + "</td></tr>\n\n")
             texto.append("\t\t\t</table>\n\n")
